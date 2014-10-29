@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset='utf-8'>
+	<title>Image Assessment Tool</title>
+	<link rel="stylesheet" type="text/css" href="nailthumb/jquery.nailthumb.1.1.min.css">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="font-awesome-4.2.0/css/font-awesome.min.css" >
+	<script type="text/javascript" src="jquery/jquery-2.1.1.min.js"></script>
+	<script type="text/javascript" src="nailthumb/jquery.nailthumb.1.1.min.js"></script>
+	<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+	<nav class="navbar navbar-inverse" role="navigation">
+		<img src="logo.png" alt="FriesenPress" id="logo">
+		<div class="page-header"><h1>Image Assessment Tool</h1></div>
+	</nav>
+
+	<div class="alert alert-info alert-dismissible" role="alert">
+	  <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+	  <strong>Note:</strong> Image assessment is based on printing at the industry standard of <span class="ppi"></span> dpi.
+	</div>
+
+	<div class="container">
+
+		<div class="row">
+			<div class="col-md-3">
+			<!--
+				<ul class="nav nav-pills nav-stacked sidebar">
+				  <li><a href="index.html"><i class="fa fa-home"></i> Home</a></li>
+				  <li class="active"><a href="assess.html"><i class="fa fa-photo"></i> Image Assessment</a></li>
+				  <li><a href="#">...</a></li>
+				</ul>
+			-->
+			</div>
+
+			<div class="col-md-6 main-window" id="form-group">
+
+				<div class="row">
+					<div class="form-group">
+						<label class="control-label" for="trim-size">Select your Trim Size:</label>
+						<select class="trim-size form-control" id="trim-size-options"></select>
+					</div>
+
+					<form class="form-group" id="radio">
+						<div class="radio">
+						  <label class="radio-inline">
+						    <input type="radio" name="image-source" id="image-from-file" value="image-from-file" checked>
+						    <i class="fa fa-file-o"></i> Image from file
+						  </label>
+						</div>
+						<div class="radio">
+						  <label class="radio-inline">
+						    <input type="radio" name="image-source" id="image-from-url" value="image-from-url" >
+						    <i class="fa fa-link"></i> Image from URL
+						  </label>
+						</div>
+					</form>
+
+					<div class="form-group" id="input-file-group">
+						<label class="control-label" for="input-file">Click to upload a picture or drag a picture here (PNG, JPG, GIF, BMP):</label>
+						<input type="file" class="form-control" id="input-file" >
+					</div>
+
+					<div class="form-group" id="input-url-group">
+						<table>
+							<tr>
+								<td><label class="control-label" for="input-url">Image URL:</label></td>
+								<td class="fill"><input type="text" class="form-control" id="input-url"></td>
+								<td><button type="button" class="btn btn-default btn-xs" id="preview-url">Preview</button></td>
+							</tr>
+						</table>
+					</div>
+
+					<p id="flash" class="text-center bg-danger">File not supported!  Please select an image file.</p>
+
+					<div class="form-group inline-block-container" id="button-and-preview">
+
+						<div class="inline-block">
+							<button type="button" class="btn btn-primary btn-lg" id="assess-image-button"><i class="fa fa-photo"></i> Assess Image</button>
+						</div>
+					    <div class="inline-block nailthumb-container square-thumb">
+					        <img id="input-preview" src="ph.png" />
+					    </div>
+					</div>
+					
+
+
+					<form class="form-horizontal" id="assessment-table">
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Width:</label>
+							<div class="col-sm-9" id="width">
+								<p class="form-control-static assessment-measurements"><span class="width-value-in"></span> in. (<span class="width-value-px"></span> px)</p>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Height:</label>
+							<div class="col-sm-9" id="height">
+								<p class="form-control-static assessment-measurements"><span class="height-value-in"></span> in. (<span class="height-value-px"></span> px)</p>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="col-sm-3 control-label">Assessment:</label>
+							<div class="col-sm-9">
+								<div class="form-control-static assessment-form">
+									<div class="progress">
+										<div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+									</div>
+									<p class="assessment-comment assessment-bad">
+										<i class="fa fa-thumbs-down"></i>
+										The resolution of this image is too low. Please use an image with better resolution.
+									</p>
+									<p class="assessment-comment assessment-good">
+										<i class="fa fa-thumbs-down"></i>
+										The resolution of this image is too low for a cover image, but may be acceptable as an author image or internal image.  Consider using an image with better resolution.
+									</p>
+									<p class="assessment-comment assessment-better">
+										<i class="fa fa-thumbs-up"></i>
+										The resolution of this image may be acceptable as a cover image, however enlargement may be required.  This image should be acceptable as an author image or internal image assuming typical layout.
+									</p>
+									<p class="assessment-comment assessment-best">
+										<i class="fa fa-thumbs-up"></i>
+										The resolution of this image is high and is acceptable for use as a cover image or author image/internal image.
+									</p>
+								</div>
+							</div>
+
+
+
+						</div>
+					</form>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<script src="assess.js"></script>
+</body> 
+</html>

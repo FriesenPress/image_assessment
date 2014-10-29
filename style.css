@@ -1,0 +1,86 @@
+body { 
+	font-family: sans-serif; 
+	background: #111; 
+}
+
+a.app-link:hover {
+	text-decoration: none;
+}
+
+.navbar {
+	padding-left: 7px;
+	padding-right: 7px;
+}
+
+#logo {
+	width: 20%;
+	height: 20%;
+}
+
+.app-icon {
+	text-align: center;
+    border: 1px solid #d8d8d8;
+    padding: 1.5em;
+    height: 100%;
+}
+.page-header {
+	color: white;
+}
+
+.main-window { 
+	border: 1px solid #428bca;
+    background: #d8d8d8; 
+    
+}
+
+.row {
+    padding: 1.4em;
+}
+
+.col1 {
+	width: 22%;
+}
+
+.fill {
+	width: 100%;
+	padding: 5px;
+}
+
+ #input-url {
+	width: 100%;
+}
+
+#assess-image-button {
+	float: left;
+}
+
+.nailthumb-container {
+	float: right;
+}
+
+.inline-block-container {
+	vertical-align: bottom;
+}
+
+.inline-block {
+	display: inline;
+}
+
+#assessment-table {
+	margin-top: 10em;
+}
+
+.assessment-good {
+	width: 100%;
+}
+
+#flash {
+	font-weight: bold;
+	padding: 0.8em;
+	margin-top: 1em;
+}
+
+#turnkey-credit { 
+	display: none; 
+}
+
