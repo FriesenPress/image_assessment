@@ -40,12 +40,29 @@
 			<div class="col-md-6 main-window" id="form-group">
 
 				<div class="row">
+
 					<div class="form-group">
-						<label class="control-label" for="trim-size">Select your Trim Size:</label>
+						<label class="control-label" for="trim-size">1. Select your trim size:</label>
 						<select class="trim-size form-control" id="trim-size-options"></select>
 					</div>
 
-					<form class="form-group" id="radio">
+					<form class="form-group" id="image-use-form">
+						<label class="control-label">2. Select where the image will be used:</label>
+						<div class="radio">
+						  <label for="cover" class="radio-inline">
+						    <input type="radio" name="usage" id="cover" value="cover" checked>
+						    <i class="fa fa-fw fa-book"></i> On the cover
+						  </label>
+						</div>
+						<div class="radio">
+						  <label for="interior" class="radio-inline">
+						    <input type="radio" name="usage" id="interior" value="interior">
+						    <i class="fa fa-fw fa-columns"></i> Inside the book
+						  </label>
+						</div>
+					</form>
+
+					<form class="form-group" id="image-source-form">
 						<div class="radio">
 						  <label class="radio-inline">
 						    <input type="radio" name="image-source" id="image-from-file" value="image-from-file" checked>
@@ -61,7 +78,7 @@
 					</form>
 
 					<div class="form-group" id="input-file-group">
-						<label class="control-label" for="input-file">Click to upload a picture or drag a picture here (PNG, JPG, GIF, BMP):</label>
+						<label class="control-label" for="input-file">3. Click to upload a picture or drag a picture here (PNG, JPG, GIF, BMP):</label>
 						<input type="file" class="form-control" id="input-file" >
 					</div>
 
@@ -112,21 +129,8 @@
 									<div class="progress">
 										<div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 									</div>
-									<p class="assessment-comment assessment-bad">
-										<i class="fa fa-thumbs-down"></i>
-										The resolution of this image is too low. Please use an image with better resolution.
-									</p>
-									<p class="assessment-comment assessment-good">
-										<i class="fa fa-thumbs-down"></i>
-										The resolution of this image is too low for a cover image, but may be acceptable as an author image or internal image.  Consider using an image with better resolution.
-									</p>
-									<p class="assessment-comment assessment-better">
-										<i class="fa fa-thumbs-up"></i>
-										The resolution of this image may be acceptable as a cover image, however enlargement may be required.  This image should be acceptable as an author image or internal image assuming typical layout.
-									</p>
-									<p class="assessment-comment assessment-best">
-										<i class="fa fa-thumbs-up"></i>
-										The resolution of this image is high and is acceptable for use as a cover image or author image/internal image.
+									<p class="assessment-comment">
+										<i class="fa assessment-icon"></i>
 									</p>
 								</div>
 							</div>
