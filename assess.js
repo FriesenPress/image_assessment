@@ -96,28 +96,27 @@ function assessImage(img) {
 	$( ".height-value-px" ).text(heightInPixels);
 	$( ".assessment-measurements" ).show();
 
+	var thumbsUp = '<i class="fa fa-fw fa-thumbs-up"></i>';
+	var thumbsDown = '<i class="fa fa-fw fa-thumbs-down"></i>';
+	
 	// This determines the assessment of the image by measuring the actual image's pixels against the predefined yardstick
 	// YARDSTICK[2][0], [2] means the best bracket def (e.g. 0.75), [0] means the width.
 	if (widthInPixels >= YARDSTICK[2][0] && areaInPixels >= YARDSTICK[2][2]) {
 		$( ".progress-bar" ).attr({ 'class': "progress-bar progress-bar-success", 'aria-valuenow': 100, style: "width:100%" });
-		$( ".assessment-comment" ).text(commentBest).show();
-		$( ".assessment-icon" ).addClass("fa-fw fa-thumbs-up");
+		$( ".assessment-comment" ).html(thumbsUp + commentBest).show();
 	}
 	else if (widthInPixels >= YARDSTICK[1][0] && areaInPixels >= YARDSTICK[1][2]) {
 		$( ".progress-bar" ).attr({	'class': "progress-bar progress-bar-info", 'aria-valuenow': 75, style: "width:75%" });
-		$( ".assessment-comment" ).text(commentBetter).show();
-		$( ".assessment-icon" ).addClass("fa-fw fa-thumbs-up");
+		$( ".assessment-comment" ).html(thumbsUp + commentBetter).show();
 
 	}
 	else if (widthInPixels >= YARDSTICK[0][0] && areaInPixels >= YARDSTICK[0][2]) {
 		$( ".progress-bar" ).attr({	'class': "progress-bar progress-bar-warning", 'aria-valuenow': 50, style: "width:50%" });
-		$( ".assessment-comment" ).text(commentGood).show();
-		$( ".assessment-icon" ).addClass("fa-fw fa-thumbs-down")
+		$( ".assessment-comment" ).html(thumbsDown + commentGood).show();
 	}
 	else {
 		$( ".progress-bar" ).attr({	'class': "progress-bar progress-bar-danger", 'aria-valuenow': 25, style: "width:25%" });
-		$( ".assessment-comment" ).text(commentBad).show();
-		$( ".assessment-icon" ).addClass("fa-fw fa-thumbs-down")
+		$( ".assessment-comment" ).html(thumbsDown + commentBad).show();
 	}
 } // end function assessImage
 
