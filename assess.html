@@ -47,17 +47,17 @@
 					</div>
 
 					<form class="form-group" id="image-use-form">
-						<label class="control-label">2. Select where the image will be used:</label>
+						<label class="control-label">2. Select how much space the image will occupy:</label>
 						<div class="radio">
 						  <label for="cover" class="radio-inline">
 						    <input type="radio" name="usage" id="cover" value="cover" checked>
-						    <i class="fa fa-fw fa-book"></i> On the cover
+						    <i class="fa fa-fw fa-book"></i> Full page (e.g. cover, etc.)
 						  </label>
 						</div>
 						<div class="radio">
 						  <label for="interior" class="radio-inline">
 						    <input type="radio" name="usage" id="interior" value="interior">
-						    <i class="fa fa-fw fa-columns"></i> Inside the book
+						    <i class="fa fa-fw fa-columns"></i> Partial page (e.g. inline image inside the book, etc.)
 						  </label>
 						</div>
 					</form>
@@ -103,7 +103,7 @@
 					        <img id="input-preview" src="ph.png" />
 					    </div>
 					</div>
-					
+
 
 
 					<form class="form-horizontal" id="assessment-table">
@@ -123,6 +123,13 @@
 						</div>
 
 						<div class="form-group">
+							<label class="col-sm-3 control-label">Aspect Ratio <small>(W:H)</small>:</label>
+							<div class="col-sm-9" id="aspect-ratio">
+								<p class="form-control-static assessment-measurements"><span class="aspect-ratio"></span></p>
+							</div>
+						</div>
+
+						<div class="form-group">
 							<label class="col-sm-3 control-label">Assessment:</label>
 							<div class="col-sm-9">
 								<div class="form-control-static assessment-form">
@@ -132,10 +139,8 @@
 										<p class="assessment-comment"></p>
 								</div>
 							</div>
-
-
-
 						</div>
+
 					</form>
 				</div>
 
@@ -144,5 +149,5 @@
 	</div>
 
 	<script src="assess.js"></script>
-</body> 
+</body>
 </html>
