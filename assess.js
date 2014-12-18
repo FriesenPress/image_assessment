@@ -1,69 +1,55 @@
-
 var SAMPLE_IMAGE_URL = 'http://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Shakespeare.jpg/800px-Shakespeare.jpg';
-
-var COVER_YARDSTICK_DEFS = [0.5, 0.75, 1.0]; // IMAGE AS % OF ACTUAL TRIM SIZE
-var INTERIOR_YARDSTICK_DEFS = [0.4, 0.5, 0.75];
-
 var PPI = 300;
 
-// W, H, AREA
+// The number represents the % of the width & area of the selected trim size that
+// the image must meet or exceed in order to meet the definition.
+var BENCHMARK_DEFINITIONS = {
+	'cover': {
+		'good': 		0.5,
+		'better': 	0.75,
+		'best': 		1.0
+	},
+	'interior': {
+		'good': 		0.4,
+		'better':		0.5,
+		'best':			0.75
+	}
+};
+
 var AVAILABLE_TRIM_SIZES_IN_INCHES = [
-		[5, 5, 25],
-		[5.5, 8.5, 46.75],
-		[6, 9, 54],
-		[7, 10, 70],
-		[8.5, 8.5, 72.25],
-		[8.5, 11, 93.5]
-	];
+{'width': 5, 		'height': 5, 		'area': 25},
+{'width': 5.5, 	'height': 8.5, 	'area': 46.75},
+{'width': 6, 		'height': 9, 		'area': 54},
+{'width': 7, 		'height': 10, 	'area': 70},
+{'width': 8.5, 	'height': 8.5, 	'area': 72.25},
+{'width': 8.5, 	'height': 11, 	'area': 93.5}
+];
 
-// This converts the AVAILABLE TRIM SIZES FROM INCHES (USER-FRIENDLY) TO PIXELS (COMPUTER-FRIENDLY).
+// MAPS AVAILABLE TRIM SIZES FROM INCHES (USER-FRIENDLY) TO PIXELS (COMPUTER-FRIENDLY).
 var AVAILABLE_TRIM_SIZES_IN_PIXELS = [];
-for (var i = 0; i < AVAILABLE_TRIM_SIZES_IN_INCHES.length; i++) {
-	var t = [];
-	for (var j = 0; j < AVAILABLE_TRIM_SIZES_IN_INCHES[i].length; j++) {
-		t.push(AVAILABLE_TRIM_SIZES_IN_INCHES[i][j] * PPI);
+for (var tsInches = 0; tsInches < AVAILABLE_TRIM_SIZES_IN_INCHES.length; tsInches++) {
+	d = {}
+	for (var key in AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]) {
+		d[key] = AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches][key] * PPI;
 	}
-	AVAILABLE_TRIM_SIZES_IN_PIXELS.push(t);
+	AVAILABLE_TRIM_SIZES_IN_PIXELS.push(d);
 }
 
 
-function init() {
-	$( "#image-source-form" ).hide()
-
-	// Builds the trim size drop-down.
-	for (var ts = 0; ts < AVAILABLE_TRIM_SIZES_IN_INCHES.length; ts++) {
-		$( "#trim-size-options" ).append($('<option>', {
-			value: ts,
-			text: AVAILABLE_TRIM_SIZES_IN_INCHES[ts][0] + ' x ' + AVAILABLE_TRIM_SIZES_IN_INCHES[ts][1]
-		}));
-	}
-
-	$( ".ppi" ).text(PPI);
-	$( "#input-url-group" ).hide();
-	$( ".assessment-measurements" ).hide();
-	$( ".assessment-comment" ).hide();
-	$( "#flash" ).hide();
-    $( ".nailthumb-container" ).nailthumb({width:100,height:100,method:'resize',fitDirection:'center center'});
+var MyImage = function(img) {
+	this.width = img.width;
+	this.height = img.height;
+	this.area = this.width * this.height;
 }
 
 
-function assessImage(img) {
-			
-	selectedTrimSizeInPixels = AVAILABLE_TRIM_SIZES_IN_PIXELS[$( "#trim-size-options" ).find(":selected").val()];
-
-	var image_usage  = $( "#image-use-form input[type='radio']:checked" ).val();
-
-	// This defines the 3 YARDSTICK in terms of pixels based on the selected trim size and the yardstick definitions.
-	var YARDSTICK = [];
-
-	if (image_usage == 'cover') {
-		var yardstick_defs = COVER_YARDSTICK_DEFS;
+MyImage.prototype.assess = function(selectedTrimSizeInPixels, imageUsage) {
+	if (imageUsage == 'cover') {
 		var commentBest = "The resolution of this image is high.";
 		var commentBetter = "The resolution of this image may be acceptable, however enlargement may be required.";
 		var commentGood = "The resolution of this image is too low.";
 		var commentBad = "The resolution of this image is too low.";
-	} else if (image_usage == 'interior') {
-		var yardstick_defs = INTERIOR_YARDSTICK_DEFS;
+	} else if (imageUsage == 'interior') {
 		var commentBest = "The resolution of this image is high.";
 		var commentBetter = "This image should be acceptable assuming typical layout.";
 		var commentGood = "The image may be acceptable as an author image or internal image.  Consider using an image with better resolution.";
@@ -72,22 +58,28 @@ function assessImage(img) {
 		alert('Error.')
 	}
 
-	for (var i = 0; i < yardstick_defs.length; i++) {
-		YARDSTICK[i] = new Array();
-		for (var j = 0; j < selectedTrimSizeInPixels.length; j++) {
-			YARDSTICK[i][j] = selectedTrimSizeInPixels[j] * yardstick_defs[i];
+	// build a dict of dicts, e.g. {'best':{'width':1000, 'height':800}, 'better': ... }
+	// During the assessment, the width and area at each benchmark will be looked up
+	// and compared against the image under assessment until a match is found.
+	var benchmarks = {};
+	for (var mark in BENCHMARK_DEFINITIONS[imageUsage]) { // e.g. good, better, best
+		var mark_val = BENCHMARK_DEFINITIONS[imageUsage][mark];
+		benchmarks[mark] = {};
+		for (var prop in selectedTrimSizeInPixels) { // e.g. width, length, height
+			var prop_val = selectedTrimSizeInPixels[prop];
+			benchmarks[mark][prop] = prop_val * mark_val;
 		}
 	}
 
-	widthInPixels 			= img.width;
-	heightInPixels 			= img.height;
-	areaInPixels 			= widthInPixels * heightInPixels;
+	widthInPixels 			= this.width;
+	heightInPixels 			= this.height;
+	areaInPixels 				= this.area;
 
 	widthInInchesRounded 	= Math.round((widthInPixels / PPI) * 10) / 10;
 	heightInInchesRounded 	= Math.round((heightInPixels / PPI) * 10) / 10;
 	widthInCmRounded 		= Math.round(widthInInchesRounded * 2.54 * 10) / 10;
 	heightInCmRounded 		= Math.round(heightInInchesRounded * 2.54 * 10) / 10;
-	
+
 	$( ".width-value-in" ).text(widthInInchesRounded);
 	$( ".width-value-cm" ).text(widthInCmRounded);
 	$( ".width-value-px" ).text(widthInPixels)
@@ -98,28 +90,51 @@ function assessImage(img) {
 
 	var thumbsUp = '<i class="fa fa-fw fa-thumbs-up"></i>';
 	var thumbsDown = '<i class="fa fa-fw fa-thumbs-down"></i>';
-	
-	// This determines the assessment of the image by measuring the actual image's pixels against the predefined yardstick
-	// YARDSTICK[2][0], [2] means the best bracket def (e.g. 0.75), [0] means the width.
-	if (widthInPixels >= YARDSTICK[2][0] && areaInPixels >= YARDSTICK[2][2]) {
+
+	if (widthInPixels >= benchmarks['best']['width'] && areaInPixels >= benchmarks['best']['area']) {
+		console.log("Assessment: ", 'best,', "Actual width: ", widthInPixels, "Benchmark width (good, better, best): ", benchmarks['good']['width'], benchmarks['better']['width'], benchmarks['best']['width']);
 		$( ".progress-bar" ).attr({ 'class': "progress-bar progress-bar-success", 'aria-valuenow': 100, style: "width:100%" });
 		$( ".assessment-comment" ).html(thumbsUp + commentBest).show();
 	}
-	else if (widthInPixels >= YARDSTICK[1][0] && areaInPixels >= YARDSTICK[1][2]) {
+	else if (widthInPixels >= benchmarks['better']['width'] && areaInPixels >= benchmarks['better']['area']) {
+		console.log("Assessment: ", 'better,', "Actual width: ", widthInPixels, "Benchmark width (good, better, best): ", benchmarks['good']['width'], benchmarks['better']['width'], benchmarks['best']['width']);
 		$( ".progress-bar" ).attr({	'class': "progress-bar progress-bar-info", 'aria-valuenow': 75, style: "width:75%" });
 		$( ".assessment-comment" ).html(thumbsUp + commentBetter).show();
 
 	}
-	else if (widthInPixels >= YARDSTICK[0][0] && areaInPixels >= YARDSTICK[0][2]) {
+	else if (widthInPixels >= benchmarks['good']['width'] && areaInPixels >= benchmarks['good']['area']) {
+		console.log("Assessment: ", 'good,', "Actual width: ", widthInPixels, "Benchmark width (good, better, best): ", benchmarks['good']['width'], benchmarks['better']['width'], benchmarks['best']['width']);
 		$( ".progress-bar" ).attr({	'class': "progress-bar progress-bar-warning", 'aria-valuenow': 50, style: "width:50%" });
 		$( ".assessment-comment" ).html(thumbsDown + commentGood).show();
 	}
 	else {
+		console.log("Assessment: ", 'bad,', "Actual width: ", widthInPixels, "Benchmark width (good, better, best): ", benchmarks['good']['width'], benchmarks['better']['width'], benchmarks['best']['width']);
 		$( ".progress-bar" ).attr({	'class': "progress-bar progress-bar-danger", 'aria-valuenow': 25, style: "width:25%" });
 		$( ".assessment-comment" ).html(thumbsDown + commentBad).show();
 	}
-} // end function assessImage
+} // end function MyImage.assess()
 
+
+function init() {
+	$( "#image-source-form" ).hide();
+	$( "#input-url-group" ).hide();
+	$( ".assessment-measurements" ).hide();
+	$( ".assessment-comment" ).hide();
+	$( "#flash" ).hide();
+
+	$( ".nailthumb-container" ).nailthumb(
+		{width:100,height:100,method:'resize',fitDirection:'center center'}
+		);
+	$( ".ppi" ).text(PPI);
+
+	// Build the trim size drop-down.
+	for (var ts = 0; ts < AVAILABLE_TRIM_SIZES_IN_INCHES.length; ts++) {
+		$( "#trim-size-options" ).append($('<option>', {
+			value: ts,
+			text: AVAILABLE_TRIM_SIZES_IN_INCHES[ts]['width'] + '" x ' + AVAILABLE_TRIM_SIZES_IN_INCHES[ts]['height'] + '"'
+		}));
+	}
+}
 
 
 $(document).ready(function() {
@@ -138,7 +153,7 @@ $(document).ready(function() {
 			$( "#input-file-group" ).hide();
 			$( "#input-url").val(SAMPLE_IMAGE_URL);
 			$( "#input-url-group" ).show();
-	        $( "#input-preview" ).attr('src', "ph.png");		
+	        $( "#input-preview" ).attr('src', "ph.png");
 		}
 	});
 
@@ -146,11 +161,11 @@ $(document).ready(function() {
 		if (this.checked) {
 			$( "#input-url-group" ).hide();
 			$( "#input-file-group" ).show();
-	        $( "#input-preview" ).attr('src', "ph.png");	
+	        $( "#input-preview" ).attr('src', "ph.png");
 		}
 	});
 
-	$( ".form-group" ).change(function() { 
+	$( ".form-group" ).change(function() {
 			$( "#flash" ).hide();
 			$( ".assessment-measurements" ).hide();
 			$( ".assessment-comment" ).hide();
@@ -176,19 +191,22 @@ $(document).ready(function() {
 
 	$( "#assess-image-button" ).on( 'click', function() {
 		$( "#flash" ).hide();
-		
+
 		// If the 'image from file' radio button is selected...
 		if ($( "#image-source-form input[type='radio']:checked" ).val() == 'image-from-file') {
 			var file = document.getElementById("input-file").files[0];
-			var imageType = /image.*/;   		
+			var selectedTrimSizeInPixels = AVAILABLE_TRIM_SIZES_IN_PIXELS[$( "#trim-size-options" ).find(":selected").val()];
+			var imageUsage  = $( "#image-use-form input[type='radio']:checked" ).val();
+			var imageType = /image.*/;
 			if (file.type.match(imageType)) {
 	  			var reader = new FileReader();
 	  			reader.onload = function() {
-					var img = new Image();
-					img.src = reader.result;
-					assessImage(img);
-				} // end case where filetype is ok
-				reader.readAsDataURL(file);
+						var image = new Image();
+						image.src = reader.result;
+						var img = new MyImage(image);
+						img.assess(selectedTrimSizeInPixels, imageUsage);
+					} // end case where filetype is ok
+					reader.readAsDataURL(file);
 			} else {
 				$( "#flash" ).show();
 			}
@@ -196,12 +214,12 @@ $(document).ready(function() {
 
 		// If the 'image from url' radio button is selected...
 		else {
-			var img = new Image();
+			var image = new Image();
 	    	url = $( "#input-url" ).val();
-	    	img.src = url;
-			img.onload = function() {
-				assessImage(img);
-	    	}
+	    	image.src = url;
+			image.onload = function() {
+				var img = new MyImage(image);
+				img.assess(selectedTrimSizeInPixels, imageUsage);	    	}
 		}
 	});
 });
