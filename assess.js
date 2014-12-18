@@ -1,3 +1,4 @@
+$.getScript("Img.js");
 
 var SAMPLE_IMAGE_URL = 'http://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Shakespeare.jpg/800px-Shakespeare.jpg';
 
@@ -5,6 +6,8 @@ var COVER_YARDSTICK_DEFS = [0.5, 0.75, 1.0]; // IMAGE AS % OF ACTUAL TRIM SIZE
 var INTERIOR_YARDSTICK_DEFS = [0.4, 0.5, 0.75];
 
 var PPI = 300;
+
+var ACCEPTABLE_RESIZE = 1.25;
 
 // W, H, AREA
 var AVAILABLE_TRIM_SIZES_IN_INCHES = [
@@ -27,6 +30,14 @@ for (var i = 0; i < AVAILABLE_TRIM_SIZES_IN_INCHES.length; i++) {
 }
 
 
+
+// Instantiate new objects with 'new'
+//var person = new Person("Bob", "M");
+
+// Invoke methods like this
+//person.speak(); // alerts "Howdy, my name is Bob"
+
+
 function init() {
 	$( "#image-source-form" ).hide()
 
@@ -47,58 +58,32 @@ function init() {
 }
 
 
-function assessImage(img) {
-			
-	selectedTrimSizeInPixels = AVAILABLE_TRIM_SIZES_IN_PIXELS[$( "#trim-size-options" ).find(":selected").val()];
+function assessResolution(img) {
+	var selectedTrimSizeInPixels 	= AVAILABLE_TRIM_SIZES_IN_PIXELS[$( "#trim-size-options" ).find(":selected").val()];
+	var widthInPixels 				= img.width;
+	var heightInPixels 				= img.height;
+	var areaInPixels 				= img.getArea();
 
-	var image_usage  = $( "#image-use-form input[type='radio']:checked" ).val();
+	var widthInInchesRounded 		= img.;
+	var heightInInchesRounded 		= Math.round((heightInPixels / PPI) * 10) / 10;
+	var widthInCmRounded 			= Math.round(widthInInchesRounded * 2.54 * 10) / 10;
+	var heightInCmRounded 			= Math.round(heightInInchesRounded * 2.54 * 10) / 10;
 
-	// This defines the 3 YARDSTICK in terms of pixels based on the selected trim size and the yardstick definitions.
-	var YARDSTICK = [];
 
-	if (image_usage == 'cover') {
-		var yardstick_defs = COVER_YARDSTICK_DEFS;
-		var commentBest = "The resolution of this image is high.";
-		var commentBetter = "The resolution of this image may be acceptable, however enlargement may be required.";
-		var commentGood = "The resolution of this image is too low.";
-		var commentBad = "The resolution of this image is too low.";
-	} else if (image_usage == 'interior') {
-		var yardstick_defs = INTERIOR_YARDSTICK_DEFS;
-		var commentBest = "The resolution of this image is high.";
-		var commentBetter = "This image should be acceptable assuming typical layout.";
-		var commentGood = "The image may be acceptable as an author image or internal image.  Consider using an image with better resolution.";
-		var commentBad = "The resolution of this image is too low. Please use an image with better resolution.";
-	} else { // Should never happen.
-		alert('Error.')
-	}
 
-	for (var i = 0; i < yardstick_defs.length; i++) {
-		YARDSTICK[i] = new Array();
-		for (var j = 0; j < selectedTrimSizeInPixels.length; j++) {
-			YARDSTICK[i][j] = selectedTrimSizeInPixels[j] * yardstick_defs[i];
-		}
-	}
+	$( ".width-value-in" ).text( img.width['in'] );
+	$( ".width-value-cm" ).text( img.width['cm'] );
+	$( ".width-value-px" ).text( img.width['px'] );
+	$( ".height-value-in" ).text( img.height['in'] );
+	$( ".height-value-cm" ).text( img.height['cm'] );
+	$( ".height-value-px" ).text( img.height['px'] );
+	$( ".aspect-value" ).text( img.getAspectRatio() );
 
-	widthInPixels 			= img.width;
-	heightInPixels 			= img.height;
-	areaInPixels 			= widthInPixels * heightInPixels;
-
-	widthInInchesRounded 	= Math.round((widthInPixels / PPI) * 10) / 10;
-	heightInInchesRounded 	= Math.round((heightInPixels / PPI) * 10) / 10;
-	widthInCmRounded 		= Math.round(widthInInchesRounded * 2.54 * 10) / 10;
-	heightInCmRounded 		= Math.round(heightInInchesRounded * 2.54 * 10) / 10;
-	
-	$( ".width-value-in" ).text(widthInInchesRounded);
-	$( ".width-value-cm" ).text(widthInCmRounded);
-	$( ".width-value-px" ).text(widthInPixels)
-	$( ".height-value-in" ).text(heightInInchesRounded);
-	$( ".height-value-cm" ).text(heightInCmRounded);
-	$( ".height-value-px" ).text(heightInPixels);
 	$( ".assessment-measurements" ).show();
 
 	var thumbsUp = '<i class="fa fa-fw fa-thumbs-up"></i>';
 	var thumbsDown = '<i class="fa fa-fw fa-thumbs-down"></i>';
-	
+
 	// This determines the assessment of the image by measuring the actual image's pixels against the predefined yardstick
 	// YARDSTICK[2][0], [2] means the best bracket def (e.g. 0.75), [0] means the width.
 	if (widthInPixels >= YARDSTICK[2][0] && areaInPixels >= YARDSTICK[2][2]) {
@@ -118,7 +103,8 @@ function assessImage(img) {
 		$( ".progress-bar" ).attr({	'class': "progress-bar progress-bar-danger", 'aria-valuenow': 25, style: "width:25%" });
 		$( ".assessment-comment" ).html(thumbsDown + commentBad).show();
 	}
-} // end function assessImage
+} // end function assessResolution
+
 
 
 
@@ -138,7 +124,7 @@ $(document).ready(function() {
 			$( "#input-file-group" ).hide();
 			$( "#input-url").val(SAMPLE_IMAGE_URL);
 			$( "#input-url-group" ).show();
-	        $( "#input-preview" ).attr('src', "ph.png");		
+	        $( "#input-preview" ).attr('src', "ph.png");
 		}
 	});
 
@@ -146,11 +132,11 @@ $(document).ready(function() {
 		if (this.checked) {
 			$( "#input-url-group" ).hide();
 			$( "#input-file-group" ).show();
-	        $( "#input-preview" ).attr('src', "ph.png");	
+	        $( "#input-preview" ).attr('src', "ph.png");
 		}
 	});
 
-	$( ".form-group" ).change(function() { 
+	$( ".form-group" ).change(function() {
 			$( "#flash" ).hide();
 			$( ".assessment-measurements" ).hide();
 			$( ".assessment-comment" ).hide();
@@ -176,17 +162,17 @@ $(document).ready(function() {
 
 	$( "#assess-image-button" ).on( 'click', function() {
 		$( "#flash" ).hide();
-		
+
 		// If the 'image from file' radio button is selected...
 		if ($( "#image-source-form input[type='radio']:checked" ).val() == 'image-from-file') {
 			var file = document.getElementById("input-file").files[0];
-			var imageType = /image.*/;   		
+			var imageType = /image.*/;
 			if (file.type.match(imageType)) {
 	  			var reader = new FileReader();
 	  			reader.onload = function() {
 					var img = new Image();
 					img.src = reader.result;
-					assessImage(img);
+					assessResolution(img);
 				} // end case where filetype is ok
 				reader.readAsDataURL(file);
 			} else {
@@ -198,9 +184,9 @@ $(document).ready(function() {
 		else {
 			var img = new Image();
 	    	url = $( "#input-url" ).val();
-	    	img.src = url;
+			img.src = url;
 			img.onload = function() {
-				assessImage(img);
+				assessResolution(img);
 	    	}
 		}
 	});
