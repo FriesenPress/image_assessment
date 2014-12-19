@@ -67,6 +67,25 @@ function logAssessment(img, level, benchmarks) {
 }
 
 
+Image.prototype.getArea = function() {
+	this.blah = "blah";
+	return this.width * this.height;
+}
+
+Image.prototype.getSize = function(resolution) {
+	if(typeof(resolution)==='undefined') resolution = 300;
+	size = {
+		'width': this.width * resolution,
+		'height': this.height * resolution,
+	}
+	return size;
+}
+
+Image.prototype.getResolution = function(key, size) {
+	var resolution = size / this[key];
+	return resolution;
+}
+
 Image.prototype.getAspectRatio = function() {
 	var heightRelativeToWidth = round((this.height / this.width), 1);
 	if (heightRelativeToWidth < 1) {
@@ -78,11 +97,8 @@ Image.prototype.getAspectRatio = function() {
 	return aspectRatioWH;
 };
 
-Image.prototype.getArea = function() {
-	return this.width * this.height;
-};
 
-Image.prototype.assess = function(selectedTrimSizeInPixels, imageUsage) {
+Image.prototype.getBenchmarks = function(selectedTrimSizeInPixels, imageUsage) {
 	// build a dict of dicts, e.g. {'best':{'width':1000, 'height':800}, 'better': ... }
 	// During the assessment, the width and area at each benchmark will be looked up
 	// and compared against the image under assessment until a match is found.
@@ -96,12 +112,20 @@ Image.prototype.assess = function(selectedTrimSizeInPixels, imageUsage) {
 			benchmarks[factor]['area'] = (selectedTrimSizeInPixels['width'] * factor_value) * (selectedTrimSizeInPixels['height'] * factor_value);
 		}
 	}
+	return benchmarks;
+}
 
-	areaInPixels 			= this.getArea();
-	widthInInchesRounded 	= toInches(this.width, PPI, 1);
-	heightInInchesRounded 	= toInches(this.height, PPI, 1);
-	widthInCmRounded 		= toCm(widthInInchesRounded, 1);
-	heightInCmRounded 		= toCm(heightInInchesRounded, 1);
+Image.prototype.assess = function(selectedTrimSizeInPixels, imageUsage) {
+	this.getArea();
+	console.log(this.blah);
+
+	var benchmarks = this.getBenchmarks(selectedTrimSizeInPixels, imageUsage);
+
+	var areaInPixels 			= this.getArea();
+	var widthInInchesRounded 	= toInches(this.width, PPI, 1);
+	var heightInInchesRounded 	= toInches(this.height, PPI, 1);
+	var widthInCmRounded 		= toCm(widthInInchesRounded, 1);
+	var heightInCmRounded 		= toCm(heightInInchesRounded, 1);
 
 	$( ".width-value-in" ).text(widthInInchesRounded);
 	$( ".width-value-cm" ).text(widthInCmRounded);
@@ -127,7 +151,7 @@ Image.prototype.assess = function(selectedTrimSizeInPixels, imageUsage) {
 		},
 		'interior': {
 			'best': 	"The resolution of this image should be sufficient for the target print area.",
-			'better': 	"Enlargement may be required for the selected trim size, but the loss of resolution may not be significant.",
+			'better': 	"Enlargement may be required for the target print area, but the loss of resolution may not be significant.",
 			'good': 	"Enlargement would likely be required which would cause significant loss of quality.  It's recommended to use an image with better resolution.",
 			'bad': 		"This is likely too small.  Please use an image with better resolution."
 		}
