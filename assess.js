@@ -78,8 +78,7 @@ function drawProgressBar(img) {
 }
 
 function printComment(img) {
-	var thumbsUp = '<i class="fa fa-fw fa-thumbs-up"></i>';
-	var thumbsDown = '<i class="fa fa-fw fa-thumbs-down"></i>';
+	var thumb = "<i class=\"fa fa-fw fa-thumbs-" + img.resultProperties[img.result]['thumb'] + "\"></i>";
 
 	var baseComment = 	"Assuming no cropping, this image can be printed at up to " +
 						img.w['inches'] + "\" by " + img.h['inches'] + "\" without losing any resolution, " +
@@ -101,9 +100,20 @@ function printComment(img) {
 		}
 	};
 
-	$( ".assessment-comment" ).html(thumbsUp + baseComment + comment[img.imageUsage][img.result]).show();
+	$( ".assessment-comment" ).html(thumb + baseComment + comment[img.imageUsage][img.result]).show();
 }
 
+
+
+
+
+Image.prototype.meetsOrExceeds = function(benchmark) {
+	console.log("Testing if image meets or exceeds", benchmark);
+	console.log("Width", this.width, this.benchmarks[benchmark]['width']);
+	console.log("Height", this.height, this.benchmarks[benchmark]['height']);
+	console.log("Area", this.area['px'], this.benchmarks[benchmark]['area']);
+	return Boolean(this.width >= this.benchmarks[benchmark]['width'] && this.height >= this.benchmarks[benchmark]['height'] && this.area['px'] >= this.benchmarks[benchmark]['area'])
+}
 
 Image.prototype.assess = function(ppi, selectedTrimSizeInPixels, imageUsage) {
 	this.ppi = ppi;
@@ -131,37 +141,38 @@ Image.prototype.assess = function(ppi, selectedTrimSizeInPixels, imageUsage) {
 	this.resultProperties = {
 		'best': {
 			'colourStyle': "success",
-			'progressBarValue': 100
+			'progressBarValue': 100,
+			'thumb': 'up'
 		},
 		'better': {
 			'colourStyle': "info",
-			'progressBarValue': 75
+			'progressBarValue': 75,
+			'thumb': 'up'
 		},
 		'good': {
 			'colourStyle': "warning",
-			'progressBarValue': 50
+			'progressBarValue': 50,
+			'thumb': 'down'
 		},
 		'bad': {
 			'colourStyle': "danger",
-			'progressBarValue': 25
+			'progressBarValue': 25,
+			'thumb': 'down'
 		}
 	}
 
-	if (this.width >= this.benchmarks['best']['width'] && this.height >= this.benchmarks['best']['height'] && this.area['px'] >= this.benchmarks['best']['area']) {
+	if (this.meetsOrExceeds("best")) {
 		this.result = "best";
 	}
-	else if (this.width >= this.benchmarks['better']['width'] && this.height >= this.benchmarks['better']['height'] && this.area['px'] >= this.benchmarks['better']['area']) {
+	else if (this.meetsOrExceeds("better")) {
 		this.result = "better";
 	}
-	else if (this.width >= this.benchmarks['good']['width'] && this.height >= this.benchmarks['good']['height'] && this.area['px'] >= this.benchmarks['good']['area']) {
+	else if (this.meetsOrExceeds("good")) {
 		this.result = "good";
 	}
 	else {
 		this.result = "bad";
 	}
-
-
-
 };
 
 
@@ -222,7 +233,7 @@ Image.prototype.report = function() {
 	logAssessment(this);
 	drawProgressBar(this);
 	printComment(this);
-}; // end function Image.prototype.report
+};
 
 
 ////////// APPLICATION FUNCTIONS
