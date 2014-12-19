@@ -30,7 +30,7 @@ var AVAILABLE_TRIM_SIZES_IN_INCHES = [
 // MAPS AVAILABLE TRIM SIZES FROM INCHES (USER-FRIENDLY) TO PIXELS (COMPUTER-FRIENDLY).
 var AVAILABLE_TRIM_SIZES_IN_PIXELS = [];
 for (var tsInches = 0; tsInches < AVAILABLE_TRIM_SIZES_IN_INCHES.length; tsInches++) {
-	d = {
+	var d = {
 		'width': AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['width'] * PPI,
 		'height': AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['height'] * PPI,
 		'area': (AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['width'] * PPI) * (AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['height'] * PPI)
@@ -45,38 +45,132 @@ String.prototype.repeat = function(n) {
 	return Array(n+1).join(this);
 }
 
-function round(num, places) {
+
+Number.prototype.px2in = function(ppi) {
+	return this / ppi;
+}
+
+Number.prototype.in2cm = function() {
+	return this * 2.54;
+}
+
+Number.prototype.roundTo = function(places) {
 	var f = parseInt('1' + '0'.repeat(places));
-	return Math.round(num * f) / f;
-}
-
-function toInches(px, PPI, places) {
-	return round((px / PPI), places);
-}
-
-function toCm(inches, places) {
-	return round((inches * 2.54), places);
-}
-
-function logAssessment(img, level, benchmarks) {
-	console.log("Assessment: ", level)
-	console.log("Actual (W, H, Area): ", img.width, img.height, img.getArea());
-	console.log("Good Benchmark: ", benchmarks['good']['width'], benchmarks['good']['height'], benchmarks['good']['area']);
-	console.log("Better Benchmark: ", benchmarks['better']['width'], benchmarks['better']['height'], benchmarks['better']['area']);
-	console.log("Best Benchmark: ", benchmarks['best']['width'], benchmarks['best']['height'], benchmarks['best']['area']);
+	return Math.round(this * f) / f;
 }
 
 
-Image.prototype.getArea = function() {
-	this.blah = "blah";
-	return this.width * this.height;
+function logAssessment(img) {
+	console.log("Assessment: ", img.result);
+	console.log("Actual (W, H, Area): ", img.width, img.height, img.area['px']);
+	console.log("Good Benchmark: ", img.benchmarks['good']['width'], img.benchmarks['good']['height'], img.benchmarks['good']['area']);
+	console.log("Better Benchmark: ", img.benchmarks['better']['width'], img.benchmarks['better']['height'], img.benchmarks['better']['area']);
+	console.log("Best Benchmark: ", img.benchmarks['best']['width'], img.benchmarks['best']['height'], img.benchmarks['best']['area']);
 }
+
+function drawProgressBar(img) {
+	var result = img.result;
+	$( ".progress-bar" ).attr(
+		{ 	'class': "progress-bar progress-bar-"+img.resultProperties[result]['colourStyle'],
+			'aria-valuenow': img.resultProperties[result]['progressBarValue'],
+			'style': "width:"+img.resultProperties[result]['progressBarValue']+"%" }
+	);
+}
+
+function printComment(img) {
+	var thumbsUp = '<i class="fa fa-fw fa-thumbs-up"></i>';
+	var thumbsDown = '<i class="fa fa-fw fa-thumbs-down"></i>';
+
+	var baseComment = 	"Assuming no cropping, this image can be printed at up to " +
+						img.w['inches'] + "\" by " + img.h['inches'] + "\" without losing any resolution, " +
+						"or at up to about " + (img.w['inches'] * 1.25) + "\" by " + (img.h['inches'] * 1.25) +
+						"\" with some minor loss of quality.\n\n";
+
+	var comment = {
+		'cover': {
+			'best': 	"The resolution of this image should be sufficient for the selected trim size.",
+			'better': 	"Enlargement may be required for the selected trim size, but the loss of resolution may not be significant.",
+			'good': 	"As a full page image, enlargement would likely be required which would cause significant loss of quality.  It's recommended to use an image with better resolution.",
+			'bad': 		"This is likely too small.  Please use an image with better resolution."
+		},
+		'interior': {
+			'best': 	"The resolution of this image should be sufficient for the target print area.",
+			'better': 	"Enlargement may be required for the target print area, but the loss of resolution may not be significant.",
+			'good': 	"Enlargement would likely be required which would cause significant loss of quality.  It's recommended to use an image with better resolution.",
+			'bad': 		"This is likely too small.  Please use an image with better resolution."
+		}
+	};
+
+	$( ".assessment-comment" ).html(thumbsUp + baseComment + comment[img.imageUsage][img.result]).show();
+}
+
+
+Image.prototype.assess = function(ppi, selectedTrimSizeInPixels, imageUsage) {
+	this.ppi = ppi;
+	this.selectedTrimSize = selectedTrimSizeInPixels;
+	this.imageUsage = imageUsage;
+
+	this.w = {
+		'px': this.width,
+		'inches': this.width.px2in(ppi).roundTo(1)
+	};
+
+	this.h = {
+		'px': this.height,
+		'inches': this.height.px2in(ppi).roundTo(1)
+	};
+
+	this.area = {
+		'px': this.width * this.height
+	}
+
+	this.aspectRatio = this.getAspectRatio();
+
+	this.benchmarks = this.getBenchmarks(selectedTrimSizeInPixels, imageUsage);
+
+	this.resultProperties = {
+		'best': {
+			'colourStyle': "success",
+			'progressBarValue': 100
+		},
+		'better': {
+			'colourStyle': "info",
+			'progressBarValue': 75
+		},
+		'good': {
+			'colourStyle': "warning",
+			'progressBarValue': 50
+		},
+		'bad': {
+			'colourStyle': "danger",
+			'progressBarValue': 25
+		}
+	}
+
+	if (this.width >= this.benchmarks['best']['width'] && this.height >= this.benchmarks['best']['height'] && this.area['px'] >= this.benchmarks['best']['area']) {
+		this.result = "best";
+	}
+	else if (this.width >= this.benchmarks['better']['width'] && this.height >= this.benchmarks['better']['height'] && this.area['px'] >= this.benchmarks['better']['area']) {
+		this.result = "better";
+	}
+	else if (this.width >= this.benchmarks['good']['width'] && this.height >= this.benchmarks['good']['height'] && this.area['px'] >= this.benchmarks['good']['area']) {
+		this.result = "good";
+	}
+	else {
+		this.result = "bad";
+	}
+
+
+
+};
+
+
 
 Image.prototype.getSize = function(resolution) {
 	if(typeof(resolution)==='undefined') resolution = 300;
 	size = {
 		'width': this.width * resolution,
-		'height': this.height * resolution,
+		'height': this.height * resolution
 	}
 	return size;
 }
@@ -87,16 +181,16 @@ Image.prototype.getResolution = function(key, size) {
 }
 
 Image.prototype.getAspectRatio = function() {
-	var heightRelativeToWidth = round((this.height / this.width), 1);
+	var aspectRatio;
+	var heightRelativeToWidth = (this.height / this.width).roundTo(1);
 	if (heightRelativeToWidth < 1) {
-		var widthRelativeToHeight = round((this.width / this.height), 1);
-		var aspectRatioWH = widthRelativeToHeight + " : 1";
+		var widthRelativeToHeight = (this.width / this.height).roundTo(1);
+		aspectRatio = widthRelativeToHeight + " : 1";
 	} else {
-		var aspectRatioWH = "1 : " + heightRelativeToWidth;
+		aspectRatio= "1 : " + heightRelativeToWidth;
 	}
-	return aspectRatioWH;
+	return aspectRatio;
 };
-
 
 Image.prototype.getBenchmarks = function(selectedTrimSizeInPixels, imageUsage) {
 	// build a dict of dicts, e.g. {'best':{'width':1000, 'height':800}, 'better': ... }
@@ -115,70 +209,20 @@ Image.prototype.getBenchmarks = function(selectedTrimSizeInPixels, imageUsage) {
 	return benchmarks;
 }
 
-Image.prototype.assess = function(selectedTrimSizeInPixels, imageUsage) {
-	this.getArea();
-	console.log(this.blah);
 
-	var benchmarks = this.getBenchmarks(selectedTrimSizeInPixels, imageUsage);
-
-	var areaInPixels 			= this.getArea();
-	var widthInInchesRounded 	= toInches(this.width, PPI, 1);
-	var heightInInchesRounded 	= toInches(this.height, PPI, 1);
-	var widthInCmRounded 		= toCm(widthInInchesRounded, 1);
-	var heightInCmRounded 		= toCm(heightInInchesRounded, 1);
-
-	$( ".width-value-in" ).text(widthInInchesRounded);
-	$( ".width-value-cm" ).text(widthInCmRounded);
+Image.prototype.report = function() {
+	$( ".width-value-in" ).text(this.w['inches']);
 	$( ".width-value-px" ).text(this.width);
-	$( ".height-value-in" ).text(heightInInchesRounded);
-	$( ".height-value-cm" ).text(heightInCmRounded);
+	$( ".height-value-in" ).text(this.h['inches']);
 	$( ".height-value-px" ).text(this.height);
-	$( ".aspect-ratio" ).text(this.getAspectRatio())
+	$( ".aspect-ratio" ).text(this.aspectRatio);
+
 	$( ".assessment-measurements" ).show();
 
-	var thumbsUp = '<i class="fa fa-fw fa-thumbs-up"></i>';
-	var thumbsDown = '<i class="fa fa-fw fa-thumbs-down"></i>';
-
-	baseComment = 	"Assuming no cropping, this image can be printed at up to " + widthInInchesRounded + "\" by " + heightInInchesRounded + "\" without losing any resolution, " +
-					"or at up to about " + (widthInInchesRounded * 1.25) + "\" by " + (heightInInchesRounded * 1.25) + "\" with some minor loss of quality.\n\n"
-
-	comment = {
-		'cover': {
-			'best': 	"The resolution of this image should be sufficient for the selected trim size.",
-			'better': 	"Enlargement may be required for the selected trim size, but the loss of resolution may not be significant.",
-			'good': 	"As a full page image, enlargement would likely be required which would cause significant loss of quality.  It's recommended to use an image with better resolution.",
-			'bad': 		"This is likely too small.  Please use an image with better resolution."
-		},
-		'interior': {
-			'best': 	"The resolution of this image should be sufficient for the target print area.",
-			'better': 	"Enlargement may be required for the target print area, but the loss of resolution may not be significant.",
-			'good': 	"Enlargement would likely be required which would cause significant loss of quality.  It's recommended to use an image with better resolution.",
-			'bad': 		"This is likely too small.  Please use an image with better resolution."
-		}
-	}
-
-	if (this.width >= benchmarks['best']['width'] && this.height >= benchmarks['best']['height'] && areaInPixels >= benchmarks['best']['area']) {
-		logAssessment(this, 'best', benchmarks);
-		$( ".progress-bar" ).attr({ 'class': "progress-bar progress-bar-success", 'aria-valuenow': 100, style: "width:100%" });
-		$( ".assessment-comment" ).html(thumbsUp + baseComment + comment[imageUsage]['best']).show();
-	}
-	else if (this.width >= benchmarks['better']['width'] && this.height >= benchmarks['better']['height'] && areaInPixels >= benchmarks['better']['area']) {
-		logAssessment(this, 'better', benchmarks);
-		$( ".progress-bar" ).attr({	'class': "progress-bar progress-bar-info", 'aria-valuenow': 75, style: "width:75%" });
-		$( ".assessment-comment" ).html(thumbsUp + baseComment + comment[imageUsage]['better']).show();
-	}
-	else if (this.width >= benchmarks['good']['width'] && this.height >= benchmarks['good']['height'] && areaInPixels >= benchmarks['good']['area']) {
-		logAssessment(this, 'good', benchmarks);
-		$( ".progress-bar" ).attr({	'class': "progress-bar progress-bar-warning", 'aria-valuenow': 50, style: "width:50%" });
-		$( ".assessment-comment" ).html(thumbsDown + baseComment + comment[imageUsage]['good']).show();
-	}
-	else {
-		logAssessment(this, 'bad', benchmarks);
-		$( ".progress-bar" ).attr({	'class': "progress-bar progress-bar-danger", 'aria-valuenow': 25, style: "width:25%" });
-		$( ".assessment-comment" ).html(thumbsDown + baseComment + comment[imageUsage]['bad']).show();
-	}
-} // end function MyImage.assess()
-
+	logAssessment(this);
+	drawProgressBar(this);
+	printComment(this);
+}; // end function Image.prototype.report
 
 
 ////////// APPLICATION FUNCTIONS
@@ -270,7 +314,8 @@ $(document).ready(function() {
 	  			reader.onload = function() {
 						var img = new Image();
 						img.src = reader.result;
-						img.assess(selectedTrimSizeInPixels, imageUsage);
+						img.assess(PPI, selectedTrimSizeInPixels, imageUsage);
+						img.report();
 					} // end case where filetype is ok
 					reader.readAsDataURL(file);
 			} else {
@@ -284,7 +329,8 @@ $(document).ready(function() {
 	    	url = $( "#input-url" ).val();
 	    	img.src = url;
 			img.onload = function() {
-				img.assess(selectedTrimSizeInPixels, imageUsage);
+				img.assess(PPI, selectedTrimSizeInPixels, imageUsage);
+				img.report();
 			}
 		}
 	});
