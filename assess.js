@@ -34,7 +34,7 @@ for (var tsInches = 0; tsInches < AVAILABLE_TRIM_SIZES_IN_INCHES.length; tsInche
 		'width': AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['width'] * PPI,
 		'height': AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['height'] * PPI,
 		'area': (AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['width'] * PPI) * (AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['height'] * PPI)
-	}
+	};
 	AVAILABLE_TRIM_SIZES_IN_PIXELS.push(d);
 }
 
@@ -43,21 +43,21 @@ for (var tsInches = 0; tsInches < AVAILABLE_TRIM_SIZES_IN_INCHES.length; tsInche
 String.prototype.repeat = function(n) {
 	n = n || 1;
 	return Array(n+1).join(this);
-}
+};
 
 
 Number.prototype.px2in = function(ppi) {
 	return this / ppi;
-}
+};
 
 Number.prototype.in2cm = function() {
 	return this * 2.54;
-}
+};
 
 Number.prototype.roundTo = function(places) {
 	var f = parseInt('1' + '0'.repeat(places));
 	return Math.round(this * f) / f;
-}
+};
 
 
 function logAssessment(img) {
@@ -113,7 +113,7 @@ Image.prototype.meetsOrExceeds = function(benchmark) {
 	console.log("Height", this.height, this.benchmarks[benchmark]['height']);
 	console.log("Area", this.area['px'], this.benchmarks[benchmark]['area']);
 	return Boolean(this.width >= this.benchmarks[benchmark]['width'] && this.height >= this.benchmarks[benchmark]['height'] && this.area['px'] >= this.benchmarks[benchmark]['area'])
-}
+};
 
 Image.prototype.assess = function(ppi, selectedTrimSizeInPixels, imageUsage) {
 	this.ppi = ppi;
@@ -132,7 +132,7 @@ Image.prototype.assess = function(ppi, selectedTrimSizeInPixels, imageUsage) {
 
 	this.area = {
 		'px': this.width * this.height
-	}
+	};
 
 	this.aspectRatio = this.getAspectRatio();
 
@@ -159,7 +159,7 @@ Image.prototype.assess = function(ppi, selectedTrimSizeInPixels, imageUsage) {
 			'progressBarValue': 25,
 			'thumb': 'down'
 		}
-	}
+	};
 
 	if (this.meetsOrExceeds("best")) {
 		this.result = "best";
@@ -179,17 +179,16 @@ Image.prototype.assess = function(ppi, selectedTrimSizeInPixels, imageUsage) {
 
 Image.prototype.getSize = function(resolution) {
 	if(typeof(resolution)==='undefined') resolution = 300;
-	size = {
+	var size = {
 		'width': this.width * resolution,
 		'height': this.height * resolution
-	}
+	};
 	return size;
-}
+};
 
 Image.prototype.getResolution = function(key, size) {
-	var resolution = size / this[key];
-	return resolution;
-}
+	return size / this[key];
+};
 
 Image.prototype.getAspectRatio = function() {
 	var aspectRatio;
@@ -209,16 +208,20 @@ Image.prototype.getBenchmarks = function(selectedTrimSizeInPixels, imageUsage) {
 	// and compared against the image under assessment until a match is found.
 	var benchmarks = {};
 	for (var factor in BENCHMARK_DEFINITIONS[imageUsage]) { // e.g. good, better, best
-		var factor_value = BENCHMARK_DEFINITIONS[imageUsage][factor]; // e.g. 0.5, 0.75, 1.0
-		benchmarks[factor] = {};
-		for (var prop in selectedTrimSizeInPixels) { // e.g. width, length, area
-			benchmarks[factor]['width'] = selectedTrimSizeInPixels['width'] * factor_value; // e.g benchmarks['good']['width'] = 1500 * 0.5
-			benchmarks[factor]['height'] = selectedTrimSizeInPixels['height'] * factor_value;
-			benchmarks[factor]['area'] = (selectedTrimSizeInPixels['width'] * factor_value) * (selectedTrimSizeInPixels['height'] * factor_value);
+		if (BENCHMARK_DEFINITIONS[imageUsage].hasOwnProperty(factor)) {
+			var factor_value = BENCHMARK_DEFINITIONS[imageUsage][factor]; // e.g. 0.5, 0.75, 1.0
+			benchmarks[factor] = {};
+			for (var prop in selectedTrimSizeInPixels) { // e.g. width, length, area
+				if (selectedTrimSizeInPixels.hasOwnProperty(prop)) {
+					benchmarks[factor]['width'] = selectedTrimSizeInPixels['width'] * factor_value; // e.g benchmarks['good']['width'] = 1500 * 0.5
+					benchmarks[factor]['height'] = selectedTrimSizeInPixels['height'] * factor_value;
+					benchmarks[factor]['area'] = (selectedTrimSizeInPixels['width'] * factor_value) * (selectedTrimSizeInPixels['height'] * factor_value);
+				}
+			}
 		}
 	}
 	return benchmarks;
-}
+};
 
 
 Image.prototype.report = function() {
@@ -301,7 +304,7 @@ $(document).ready(function() {
 	            reader.onload = function (e) {
 	            	$( ".nailthumb-container" ).nailthumb({width:100,height:100,method:'resize',fitDirection:'center center'});
 	                $( "#input-preview" ).attr('src', e.target.result);
-	            }
+	            };
 	            reader.readAsDataURL(this.files[0]);
 	        }
 	});
@@ -327,7 +330,7 @@ $(document).ready(function() {
 						img.src = reader.result;
 						img.assess(PPI, selectedTrimSizeInPixels, imageUsage);
 						img.report();
-					} // end case where filetype is ok
+					}; // end case where filetype is ok
 					reader.readAsDataURL(file);
 			} else {
 				$( "#flash" ).show();
@@ -337,8 +340,7 @@ $(document).ready(function() {
 		// If the 'image from url' radio button is selected...
 		else {
 			var img = new Image();
-	    	url = $( "#input-url" ).val();
-	    	img.src = url;
+	    	img.src = $( "#input-url" ).val();
 			img.onload = function() {
 				img.assess(PPI, selectedTrimSizeInPixels, imageUsage);
 				img.report();
