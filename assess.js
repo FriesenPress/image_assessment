@@ -1,6 +1,8 @@
 ////// GLOBAL VARIABLES
 
 var PPI = 300;
+var ASPECT_RATIO_DIFF_WARN_LEVEL = 2;
+
 var SAMPLE_IMAGE_URL = 'http://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Shakespeare.jpg/800px-Shakespeare.jpg';
 
 // The number represents the % of the width & length & area of the selected trim size that
@@ -173,6 +175,7 @@ Image.prototype.assess = function(ppi, selectedTrimSizeInPixels, imageUsage) {
 	else {
 		this.result = "bad";
 	}
+
 };
 
 
@@ -202,6 +205,15 @@ Image.prototype.getAspectRatio = function() {
 	return aspectRatio;
 };
 
+Image.prototype.aspectRatioDiffExceeds = function(n) {
+	if ( ((this.height * n) < this.width) || ((this.width * n) <= this.height) ) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+
 Image.prototype.getBenchmarks = function(selectedTrimSizeInPixels, imageUsage) {
 	// build a dict of dicts, e.g. {'best':{'width':1000, 'height':800}, 'better': ... }
 	// During the assessment, the width and area at each benchmark will be looked up
@@ -230,6 +242,9 @@ Image.prototype.report = function() {
 	$( ".height-value-in" ).text(this.h['inches']);
 	$( ".height-value-px" ).text(this.height);
 	$( ".aspect-ratio" ).text(this.aspectRatio);
+	if (  this.aspectRatioDiffExceeds(ASPECT_RATIO_DIFF_WARN_LEVEL) ) {
+		$("#aspect-ratio-warning").text("Height:width difference is greater than " + ASPECT_RATIO_DIFF_WARN_LEVEL + "!").show();
+	}
 
 	$( ".assessment-measurements" ).show();
 
@@ -247,6 +262,7 @@ function init() {
 	$( ".assessment-measurements" ).hide();
 	$( ".assessment-comment" ).hide();
 	$( "#flash" ).hide();
+	$( "#aspect-ratio-warning").hide();
 
 	$( ".nailthumb-container" ).nailthumb(
 		{width:100,height:100,method:'resize',fitDirection:'center center'}
@@ -295,6 +311,7 @@ $(document).ready(function() {
 			$( "#flash" ).hide();
 			$( ".assessment-measurements" ).hide();
 			$( ".assessment-comment" ).hide();
+			$( "#aspect-ratio-warning").hide();
 			$( ".progress-bar" ).attr({	'class': "progress-bar", 'aria-valuenow': 0, style: "width:0%" });
 	});
 
