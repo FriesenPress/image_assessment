@@ -1572,7 +1572,7 @@ if (typeof jQuery === 'undefined') { throw new Error('Bootstrap\'s JavaScript re
   // ===============================
 
   var Popover = function (element, options) {
-    this.init('popover', element, options)
+    this.initializeForm('popover', element, options)
   }
 
   if (!$.fn.tooltip) throw new Error('Popover requires tooltip.js')

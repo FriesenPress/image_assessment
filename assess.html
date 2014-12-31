@@ -49,15 +49,21 @@
 					<form class="form-group" id="image-use-form">
 						<label class="control-label">2. Select how much space the image will occupy:</label>
 						<div class="radio">
+						  <label for="interior" class="radio-inline">
+						    <input type="radio" name="usage" id="interior" value="interior" checked>
+						    <i class="fa fa-fw fa-photo"></i> Partial page (e.g. inline image inside the book, etc.)
+						  </label>
+						</div>
+						<div class="radio">
 						  <label for="cover" class="radio-inline">
-						    <input type="radio" name="usage" id="cover" value="cover" checked>
+						    <input type="radio" name="usage" id="cover" value="cover">
 						    <i class="fa fa-fw fa-book"></i> Full page (e.g. cover, etc.)
 						  </label>
 						</div>
 						<div class="radio">
-						  <label for="interior" class="radio-inline">
-						    <input type="radio" name="usage" id="interior" value="interior">
-						    <i class="fa fa-fw fa-columns"></i> Partial page (e.g. inline image inside the book, etc.)
+						  <label for="spread" class="radio-inline">
+						    <input type="radio" name="usage" id="spread" value="spread">
+						    <i class="fa fa-fw fa-columns"></i> Full spread (e.g. double-wide)
 						  </label>
 						</div>
 					</form>
@@ -92,45 +98,59 @@
 						</table>
 					</div>
 
-					<p id="flash" class="text-center bg-danger">File not supported!  Please select an image file.</p>
+					<p id="flash" class="text-center bg-danger">File not supported! Please select an image file.</p>
 
-					<div class="form-group inline-block-container" id="button-and-preview">
 
-						<div class="inline-block">
-							<button type="button" class="btn btn-primary btn-lg" id="assess-image-button"><i class="fa fa-photo"></i> Assess Image</button>
-						</div>
-					    <div class="inline-block nailthumb-container square-thumb">
-					        <img id="input-preview" src="ph.png" />
-					    </div>
+
+					<div id="button-and-preview" class="form-group inline-block-container">
+						<button type="button" class="btn btn-primary btn-lg" id="assess-image-button"><i class="fa fa-photo"></i> Assess Image</button>
+
+						<table id="image-preview-table">
+							<tr>
+								<td></td>
+								<td class="centered-cell"><small class="image-attribute"><span class="aspect-ratio"></span> (W:H)</small></td>
+							</tr>
+							<tr>
+								<td><small class="height-attribute image-attribute"><span class="height-value-px"></span> px (H)</small></td>
+								<td>
+									<div class="inline-block nailthumb-container square-thumb">
+										<img id="input-preview" src="ph.png" />
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<td></td>
+								<td class="centered-cell"><small class="image-attribute"><span class="width-value-px"></span> px (W)</small></td>
+							</tr>
+						</table>
+
 					</div>
-
-
 
 					<form class="form-horizontal" id="assessment-table">
 
 						<div class="form-group">
-							<label class="col-sm-3 control-label">Width:</label>
+							<label class="col-sm-3 control-label">Print Width:</label>
 							<div class="col-sm-9" id="width">
-								<p class="form-control-static assessment-measurements"><span class="width-value-in"></span> in. (<span class="width-value-px"></span> px)</p>
+								<p class="form-control-static assessment-measurements"><span class="width-value-in"></span>"</p>
 							</div>
 						</div>
 
 						<div class="form-group">
-							<label class="col-sm-3 control-label">Height:</label>
+							<label class="col-sm-3 control-label">Print Height:</label>
 							<div class="col-sm-9" id="height">
-								<p class="form-control-static assessment-measurements"><span class="height-value-in"></span> in. (<span class="height-value-px"></span> px)</p>
+								<p class="form-control-static assessment-measurements"><span class="height-value-in"></span>"</p>
 							</div>
 						</div>
 
 						<div class="form-group">
-							<label class="col-sm-3 control-label">Aspect Ratio <small>(W:H)</small>:</label>
+							<label class="col-sm-3 control-label">Aspect Ratio:</label>
 							<div class="col-sm-9" id="aspect-ratio">
-								<p class="form-control-static assessment-measurements"><span class="aspect-ratio"></span><span id="aspect-ratio-warning" class="label label-danger"></span></p>
+								<p class="form-control-static assessment-measurements"><span id="aspect-ratio-comment" class="label"></span></p>
 							</div>
 						</div>
 
 						<div class="form-group">
-							<label class="col-sm-3 control-label">Assessment:</label>
+							<label class="col-sm-3 control-label">Resolution:</label>
 							<div class="col-sm-9">
 								<div class="form-control-static assessment-form">
 									<div class="progress">

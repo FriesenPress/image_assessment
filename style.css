@@ -46,8 +46,17 @@ a.app-link:hover {
 	padding: 5px;
 }
 
- #input-url {
+#input-url {
 	width: 100%;
+}
+
+#image-preview-table {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.centered-cell {
+	text-align: center;
 }
 
 #assess-image-button {
@@ -67,7 +76,7 @@ a.app-link:hover {
 }
 
 #assessment-table {
-	margin-top: 10em;
+	margin-top: 1em;
 }
 
 .assessment-good {
@@ -78,6 +87,10 @@ a.app-link:hover {
 	font-weight: bold;
 	padding: 0.8em;
 	margin-top: 1em;
+}
+
+.height-attribute {
+	margin-right: 10px;
 }
 
 #turnkey-credit { 
