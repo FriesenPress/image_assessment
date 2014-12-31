@@ -281,8 +281,9 @@ Image.prototype.report = function() {
 	$( ".width-value-in" ).text(this.w['inches']);
 	$( ".height-value-in" ).text(this.h['inches']);
 	$( ".aspect-ratio" ).text(this.aspectRatio);
-	$( "#aspect-ratio-comment" ).text( this.getAspectRatioComment(1.5).comment ).show();
-	$( "#aspect-ratio-comment" ).attr( {'class': this.getAspectRatioComment(1.5).labelStyle} );
+	$( "#aspect-ratio-comment" )
+		.text( this.getAspectRatioComment(1.5).comment ).show()
+		.attr( {'class': this.getAspectRatioComment(1.5).labelStyle} );
 	$( ".assessment-measurements" ).show();
 	$( ".assessment-comment" ).html(this.getAssessmentComment()).show();
 
