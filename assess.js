@@ -1,7 +1,6 @@
 ////// GLOBAL VARIABLES
 
 var PPI = 300;
-var ASPECT_RATIO_DIFF_WARN_LEVEL = 2;
 var SAMPLE_IMAGE_URL = 'http://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Shakespeare.jpg/800px-Shakespeare.jpg';
 
 var AVAILABLE_TRIM_SIZES_IN_INCHES = [
@@ -52,20 +51,14 @@ String.prototype.repeat = function(n) {
 	return Array(n+1).join(this);
 };
 
-
 Number.prototype.px2in = function(ppi) {
 	return this / ppi;
-};
-
-Number.prototype.in2cm = function() {
-	return this * 2.54;
 };
 
 Number.prototype.roundTo = function(places) {
 	var f = parseInt('1' + '0'.repeat(places));
 	return Math.round(this * f) / f;
 };
-
 
 function logAssessment(img) {
 	console.log("Assessment: ", img.result, img.src);
@@ -193,19 +186,6 @@ Image.prototype.meetsOrExceeds = function(benchmark) {
 	return Boolean(this.width >= this.benchmarks[benchmark]['width'] && this.height >= this.benchmarks[benchmark]['height'] && this.area['px'] >= this.benchmarks[benchmark]['area'])
 };
 
-Image.prototype.getSize = function(resolution) {
-	if(typeof(resolution)==='undefined') resolution = 300;
-	var size = {
-		'width': this.width * resolution,
-		'height': this.height * resolution
-	};
-	return size;
-};
-
-Image.prototype.getResolution = function(key, size) {
-	return size / this[key];
-};
-
 Image.prototype.getAspectRatio = function() {
 	var aspectRatio;
 	var heightRelativeToWidth = (this.height / this.width).roundTo(1);
@@ -216,14 +196,6 @@ Image.prototype.getAspectRatio = function() {
 		aspectRatio= "1 : " + heightRelativeToWidth;
 	}
 	return aspectRatio;
-};
-
-Image.prototype.aspectRatioDiffExceeds = function(n) {
-	if ( ((this.height * n) < this.width) || ((this.width * n) <= this.height) ) {
-		return true;
-	} else {
-		return false;
-	}
 };
 
 Image.prototype.getAspectRatioComment = function(n) {
@@ -242,10 +214,10 @@ Image.prototype.getAspectRatioComment = function(n) {
 	var labelStyle;
 	// WidthAsPctOfHeight.  if 1, the image is a square.  If <1, image is portrait (all trim sizes).  If >1, image is landscape orientation.
 	if ( (actualWidthAsPctOfHeight * n) < targetWidthAsPctOfHeight ) {
-		comment = 'The selected image has more height/less width than its target print area.';
+		comment = 'Much taller and skinnier than the target print space.';
 		labelStyle = 'label label-danger';
 	} else if ( actualWidthAsPctOfHeight > (targetWidthAsPctOfHeight * n) ) {
-		comment = 'The selected image has less height/more width than its target print area.';
+		comment = 'Much shorter and wider than the target print space.';
 		labelStyle = 'label label-danger';
 	} else {
 		comment = 'Actual dimensions are similar to target dimensions.';
@@ -276,7 +248,6 @@ Image.prototype.getBenchmarks = function(selectedTrimSizeInPixels, imageUsage) {
 	return benchmarks;
 };
 
-
 Image.prototype.report = function() {
 	$( ".width-value-in" ).text(this.w['inches']);
 	$( ".height-value-in" ).text(this.h['inches']);
@@ -292,10 +263,8 @@ Image.prototype.report = function() {
 };
 
 
-////////// APPLICATION FUNCTIONS
-
 function initializeForm() {
-	$( "#image-source-form" ).hide();
+	//$( "#image-source-form" ).hide();
 	$( "#input-url-group" ).hide();
 	$( ".assessment-measurements" ).hide();
 	$( ".assessment-comment" ).hide();
@@ -379,12 +348,11 @@ $(document).ready(function() {
 
 	$( "#assess-image-button" ).on( 'click', function() {
 		$( "#flash" ).hide();
-
 		// If the 'image from file' radio button is selected...
+        var selectedTrimSizeInPixels = AVAILABLE_TRIM_SIZES_IN_PIXELS[$( "#trim-size-options" ).find(":selected").val()];
+        var imageUsage  = $( "#image-use-form input[type='radio']:checked" ).val();
 		if ($( "#image-source-form input[type='radio']:checked" ).val() == 'image-from-file') {
 			var file = document.getElementById("input-file").files[0];
-			var selectedTrimSizeInPixels = AVAILABLE_TRIM_SIZES_IN_PIXELS[$( "#trim-size-options" ).find(":selected").val()];
-			var imageUsage  = $( "#image-use-form input[type='radio']:checked" ).val();
 			var imageType = /image.*/;
 			if (file.type.match(imageType)) {
 	  			var reader = new FileReader();
@@ -400,12 +368,12 @@ $(document).ready(function() {
 				$( "#flash" ).show();
 			}
 		}
-
 		// If the 'image from url' radio button is selected...
 		else {
 			var img = new Image();
 	    	img.src = $( "#input-url" ).val();
 			img.onload = function() {
+                img.initialize();
 				img.assess(PPI, selectedTrimSizeInPixels, imageUsage);
 				img.report();
 			}
