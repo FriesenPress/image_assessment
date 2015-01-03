@@ -304,6 +304,7 @@ $(document).ready(function() {
 			$( "#input-url").val(SAMPLE_IMAGE_URL);
 			$( "#input-url-group" ).show();
 	        $( "#input-preview" ).attr('src', "ph.png");
+            $( ".image-attribute").hide();
 		}
 	});
 
@@ -312,6 +313,7 @@ $(document).ready(function() {
 			$( "#input-url-group" ).hide();
 			$( "#input-file-group" ).show();
 	        $( "#input-preview" ).attr('src', "ph.png");
+            $( ".image-attribute").hide();
 		}
 	});
 
@@ -341,9 +343,21 @@ $(document).ready(function() {
 	        }
 	});
 
+    function displayPreviewImageFromURL() {
+        var url = $("#input-url").val();
+        var img = new Image();
+        img.src = url;
+        img.initialize();
+        $(".nailthumb-container").nailthumb({width: 100, height: 100, method: 'resize', fitDirection: 'center center'});
+        $("#input-preview").attr('src', url);
+        $(".aspect-ratio").text(img.getAspectRatio());
+        $(".width-value-px").text(img.w['px']);
+        $(".height-value-px").text(img.h['px']);
+        $(".image-attribute").show(); // width in px, height in px, aspectRatio str
+    };
+
 	$( "#preview-url" ).on( 'click', function() {
-		$( ".nailthumb-container" ).nailthumb({width:100,height:100,method:'resize',fitDirection:'center center'});
-	    $( "#input-preview" ).attr('src', $( "#input-url" ).val());
+        displayPreviewImageFromURL();
 	});
 
 	$( "#assess-image-button" ).on( 'click', function() {
@@ -351,7 +365,8 @@ $(document).ready(function() {
 		// If the 'image from file' radio button is selected...
         var selectedTrimSizeInPixels = AVAILABLE_TRIM_SIZES_IN_PIXELS[$( "#trim-size-options" ).find(":selected").val()];
         var imageUsage  = $( "#image-use-form input[type='radio']:checked" ).val();
-		if ($( "#image-source-form input[type='radio']:checked" ).val() == 'image-from-file') {
+
+        if ($( "#image-source-form input[type='radio']:checked" ).val() == 'image-from-file') {
 			var file = document.getElementById("input-file").files[0];
 			var imageType = /image.*/;
 			if (file.type.match(imageType)) {
@@ -370,6 +385,7 @@ $(document).ready(function() {
 		}
 		// If the 'image from url' radio button is selected...
 		else {
+            displayPreviewImageFromURL();
 			var img = new Image();
 	    	img.src = $( "#input-url" ).val();
 			img.onload = function() {
