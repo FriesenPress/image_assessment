@@ -61,7 +61,7 @@ Number.prototype.roundTo = function(places) {
 
 function logAssessment(img) {
 	console.log("Assessment: ", img.result, img.src);
-	console.log("Actual (W, H, Area): ", img.width, img.height);
+	console.log("Actual (W, H): ", img.width, img.height);
 	console.log("Good Benchmark: ", img.benchmarks['good']['width'], img.benchmarks['good']['height']);
 	console.log("Better Benchmark: ", img.benchmarks['better']['width'], img.benchmarks['better']['height']);
 	console.log("Best Benchmark: ", img.benchmarks['best']['width'], img.benchmarks['best']['height']);
@@ -178,9 +178,9 @@ Image.prototype.assess = function(ppi, selectedTrimSizeInPixels, imageUsage) {
 };
 
 Image.prototype.meetsOrExceeds = function(benchmark) {
-	console.log("Testing if image meets or exceeds", benchmark, "...");
-	console.log("Width", this.width, this.benchmarks[benchmark]['width']);
-	console.log("Height", this.height, this.benchmarks[benchmark]['height']);
+	console.log("Testing if image height and width meets or exceeds", benchmark, "...");
+	console.log("Width (actual, target):", this.width, this.benchmarks[benchmark]['width']);
+	console.log("Height (actual, target):", this.height, this.benchmarks[benchmark]['height']);
 	return Boolean(this.width >= this.benchmarks[benchmark]['width'] && this.height >= this.benchmarks[benchmark]['height'])
 };
 
@@ -197,25 +197,28 @@ Image.prototype.getAspectRatio = function() {
 };
 
 Image.prototype.getAspectRatioComment = function(n) {
-	var actualWidthAsPctOfHeight = this.width / this.height;
+    var actualWidthAsPctOfHeight = this.width / this.height;
 
-	var targetWidthAsPctOfHeight; // width divided by height
-	if (this.imageUsage == 'cover' || this.imageUsage == 'interior') {
-		targetWidthAsPctOfHeight = this.selectedTrimSize['width'] / this.selectedTrimSize['height'];
-	} else if (this.imageUsage == 'spread') {
-		targetWidthAsPctOfHeight = (this.selectedTrimSize['width'] * 2) / this.selectedTrimSize['height'];
-	} else {
-		targetWidthAsPctOfHeight = 1;
-	}
+    var targetWidthAsPctOfHeight; // width divided by height
+    if (this.imageUsage == 'cover' || this.imageUsage == 'interior') {
+        targetWidthAsPctOfHeight = this.selectedTrimSize['width'] / this.selectedTrimSize['height'];
+    } else if (this.imageUsage == 'spread') {
+        targetWidthAsPctOfHeight = (this.selectedTrimSize['width'] * 2) / this.selectedTrimSize['height'];
+    } else {
+        targetWidthAsPctOfHeight = 1;
+    }
 
-	var comment;
-	var labelStyle;
-	// WidthAsPctOfHeight.  if 1, the image is a square.  If <1, image is portrait (all trim sizes).  If >1, image is landscape orientation.
-	if ( (actualWidthAsPctOfHeight * n) < targetWidthAsPctOfHeight ) {
-		comment = 'Much taller and skinnier than the target print space.';
+    var comment;
+    var labelStyle;
+    // WidthAsPctOfHeight.  if 1, the image is a square.  If <1, image is portrait (all trim sizes).  If >1, image is landscape orientation.
+    if ( this.imageUsage =='interior') {
+        comment = 'Aspect ratio assessment is not applicable to interior images.';
+        labelStyle = 'label label-default'
+    } else if ( (actualWidthAsPctOfHeight * n) < targetWidthAsPctOfHeight ) {
+		comment = 'The image is proportionately taller and skinnier than the target print space.';
 		labelStyle = 'label label-danger';
 	} else if ( actualWidthAsPctOfHeight > (targetWidthAsPctOfHeight * n) ) {
-		comment = 'Much shorter and wider than the target print space.';
+		comment = 'The image is proportionately shorter and wider than the target print space.';
 		labelStyle = 'label label-danger';
 	} else {
 		comment = 'Actual dimensions are similar to target dimensions.';
