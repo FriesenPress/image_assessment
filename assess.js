@@ -340,21 +340,24 @@ $(document).ready(function() {
 	        }
 	});
 
-    function displayPreviewImageFromURL() {
-        var url = $("#input-url").val();
-        var img = new Image();
+
+    function previewImageFromURL(url) {
+        var img = new Image;
         img.src = url;
-        img.initialize();
-        $(".nailthumb-container").nailthumb({width: 100, height: 100, method: 'resize', fitDirection: 'center center'});
-        $("#input-preview").attr('src', url);
-        $(".aspect-ratio").text(img.getAspectRatio());
-        $(".width-value-px").text(img.w['px']);
-        $(".height-value-px").text(img.h['px']);
-        $(".image-attribute").show(); // width in px, height in px, aspectRatio str
+        setTimeout(function() {
+            img.initialize();
+            $(".nailthumb-container").nailthumb({width: 100, height: 100, method: 'resize', fitDirection: 'center center'});
+            $("#input-preview").attr('src', url);
+            $(".aspect-ratio").text(img.getAspectRatio());
+            $(".width-value-px").text(img.w['px']);
+            $(".height-value-px").text(img.h['px']);
+            $(".image-attribute").show(); // width in px, height in px, aspectRatio str
+        }, 100);
     };
 
 	$( "#preview-url" ).on( 'click', function() {
-        displayPreviewImageFromURL();
+        var url = $("#input-url").val();
+        previewImageFromURL(url);
 	});
 
 	$( "#assess-image-button" ).on( 'click', function() {
@@ -382,9 +385,13 @@ $(document).ready(function() {
 		}
 		// If the 'image from url' radio button is selected...
 		else {
-            displayPreviewImageFromURL();
+            var url = $("#input-url").val();
+            var inputPreviewSrc = $("#input-preview").attr('src');
+            if (url != inputPreviewSrc) {
+                previewImageFromURL(url);
+            }
 			var img = new Image();
-	    	img.src = $( "#input-url" ).val();
+	    	img.src = url;
 			img.onload = function() {
                 img.initialize();
 				img.assess(PPI, selectedTrimSizeInPixels, imageUsage);
