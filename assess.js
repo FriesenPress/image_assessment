@@ -4,43 +4,42 @@ var PPI = 300;
 var SAMPLE_IMAGE_URL = 'http://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Shakespeare.jpg/800px-Shakespeare.jpg';
 
 var AVAILABLE_TRIM_SIZES_IN_INCHES = [
-	{'width': 5, 	'height': 5, 	'area': 25},
-	{'width': 5.5, 	'height': 8.5, 	'area': 46.75},
-	{'width': 6, 	'height': 9, 	'area': 54},
-	{'width': 7, 	'height': 10, 	'area': 70},
-	{'width': 8.5, 	'height': 8.5, 	'area': 72.25},
-	{'width': 8.5, 	'height': 11, 	'area': 93.5}
+	{'width': 5, 	'height': 5},
+	{'width': 5.5, 	'height': 8.5},
+	{'width': 6, 	'height': 9},
+	{'width': 7, 	'height': 10},
+	{'width': 8.5, 	'height': 8.5},
+	{'width': 8.5, 	'height': 11}
 ];
 
 // The number represents the % of the width & length & area of the selected trim size that
 // the image must meet or exceed in order to meet the definition.
 var BENCHMARK_DEFINITIONS = {
 	'cover': {
-		'good': 	{'width': 0.5, 	'height': 0.5,	'area': 0.5 },
-		'better': 	{'width': 0.75, 'height': 0.75,	'area': 0.75},
-		'best': 	{'width': 1.0, 	'height': 1.0,	'area': 1.0}
+		'good': 	{'width': 0.5, 	'height': 0.5},
+		'better': 	{'width': 0.75, 'height': 0.75},
+		'best': 	{'width': 1.0, 	'height': 1.0}
 	},
 	'interior': {
-		'good': 	{'width': 0.4,	'height': 0.4,	'area': 0.4},
-		'better':	{'width': 0.5,	'height': 0.5, 	'area': 0.5},
-		'best':		{'width': 0.75,	'height': 0.75, 'area': 0.75}
+		'good': 	{'width': 0.4,	'height': 0.4},
+		'better':	{'width': 0.5,	'height': 0.5},
+		'best':		{'width': 0.75,	'height': 0.75}
 	},
 	'spread': {
-		'good': 	{'width': 1.0, 	'height': 0.5,	'area': 0.5 },
-		'better': 	{'width': 1.5, 	'height': 0.75,	'area': 0.75},
-		'best': 	{'width': 2.0, 	'height': 1.0,	'area': 1.0}
+		'good': 	{'width': 1.0, 	'height': 0.5},
+		'better': 	{'width': 1.5, 	'height': 0.75},
+		'best': 	{'width': 2.0, 	'height': 1.0}
 	}
 };
 
 // MAPS AVAILABLE TRIM SIZES FROM INCHES (USER-FRIENDLY) TO PIXELS (COMPUTER-FRIENDLY).
 var AVAILABLE_TRIM_SIZES_IN_PIXELS = [];
 for (var tsInches = 0; tsInches < AVAILABLE_TRIM_SIZES_IN_INCHES.length; tsInches++) {
-	var d = {
+	var trimSize = {
 		'width': AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['width'] * PPI,
-		'height': AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['height'] * PPI,
-		'area': (AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['width'] * PPI) * (AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['height'] * PPI)
+		'height': AVAILABLE_TRIM_SIZES_IN_INCHES[tsInches]['height'] * PPI
 	};
-	AVAILABLE_TRIM_SIZES_IN_PIXELS.push(d);
+	AVAILABLE_TRIM_SIZES_IN_PIXELS.push(trimSize);
 }
 
 
@@ -62,10 +61,10 @@ Number.prototype.roundTo = function(places) {
 
 function logAssessment(img) {
 	console.log("Assessment: ", img.result, img.src);
-	console.log("Actual (W, H, Area): ", img.width, img.height, img.area['px']);
-	console.log("Good Benchmark: ", img.benchmarks['good']['width'], img.benchmarks['good']['height'], img.benchmarks['good']['area']);
-	console.log("Better Benchmark: ", img.benchmarks['better']['width'], img.benchmarks['better']['height'], img.benchmarks['better']['area']);
-	console.log("Best Benchmark: ", img.benchmarks['best']['width'], img.benchmarks['best']['height'], img.benchmarks['best']['area']);
+	console.log("Actual (W, H, Area): ", img.width, img.height);
+	console.log("Good Benchmark: ", img.benchmarks['good']['width'], img.benchmarks['good']['height']);
+	console.log("Better Benchmark: ", img.benchmarks['better']['width'], img.benchmarks['better']['height']);
+	console.log("Best Benchmark: ", img.benchmarks['best']['width'], img.benchmarks['best']['height']);
 	console.log("");
 }
 
@@ -182,8 +181,7 @@ Image.prototype.meetsOrExceeds = function(benchmark) {
 	console.log("Testing if image meets or exceeds", benchmark, "...");
 	console.log("Width", this.width, this.benchmarks[benchmark]['width']);
 	console.log("Height", this.height, this.benchmarks[benchmark]['height']);
-	console.log("Area", this.area['px'], this.benchmarks[benchmark]['area']);
-	return Boolean(this.width >= this.benchmarks[benchmark]['width'] && this.height >= this.benchmarks[benchmark]['height'] && this.area['px'] >= this.benchmarks[benchmark]['area'])
+	return Boolean(this.width >= this.benchmarks[benchmark]['width'] && this.height >= this.benchmarks[benchmark]['height'])
 };
 
 Image.prototype.getAspectRatio = function() {
@@ -240,7 +238,6 @@ Image.prototype.getBenchmarks = function(selectedTrimSizeInPixels, imageUsage) {
 				if (selectedTrimSizeInPixels.hasOwnProperty(prop)) {
 					benchmarks[benchmark]['width'] = selectedTrimSizeInPixels['width'] * percentages['width']; // e.g benchmarks['good']['width'] = 1500 * 0.5
 					benchmarks[benchmark]['height'] = selectedTrimSizeInPixels['height'] * percentages['height'];
-					benchmarks[benchmark]['area'] = (selectedTrimSizeInPixels['width'] * percentages['area']) * (selectedTrimSizeInPixels['height'] * percentages['area']);
 				}
 			}
 		}
