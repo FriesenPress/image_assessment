@@ -59,27 +59,8 @@ Number.prototype.roundTo = function(places) {
 	return Math.round(this * f) / f;
 };
 
-function logAssessment(img) {
-	console.log("Assessment: ", img.result, img.src);
-	console.log("Actual (W, H): ", img.width, img.height);
-	console.log("Good Benchmark: ", img.benchmarks['good']['width'], img.benchmarks['good']['height']);
-	console.log("Better Benchmark: ", img.benchmarks['better']['width'], img.benchmarks['better']['height']);
-	console.log("Best Benchmark: ", img.benchmarks['best']['width'], img.benchmarks['best']['height']);
-	console.log("");
-}
-
-function drawProgressBar(img) {
-	var result = img.result;
-	$( ".progress-bar" ).attr(
-		{ 	'class': "progress-bar progress-bar-"+img.resultProperties[result]['colourStyle'],
-			'aria-valuenow': img.resultProperties[result]['progressBarValue'],
-			'style': "width:"+img.resultProperties[result]['progressBarValue']+"%" }
-	);
-}
 
 Image.prototype.getAssessmentComment = function() {
-	var thumb = "<i class=\"fa fa-fw fa-thumbs-" + this.resultProperties[this.result]['thumb'] + "\"></i>";
-
 	var baseComment = 	"Assuming no cropping, this image can be printed at up to " +
 						this.w['inches'] + "\" by " + this.h['inches'] + "\" without losing any resolution, " +
 						"or at up to about " + (this.w['inches'] * 1.25) + "\" by " + (this.h['inches'] * 1.25) +
@@ -105,8 +86,7 @@ Image.prototype.getAssessmentComment = function() {
 			'bad': 		"This is likely too small.  Please use an image with better resolution."
 		}
 	};
-
-	return thumb + baseComment + comment[this.imageUsage][this.result];
+	return baseComment + comment[this.imageUsage][this.result];
 };
 
 Image.prototype.getAssessmentResult = function() {
@@ -145,36 +125,8 @@ Image.prototype.initialize = function() {
 };
 
 Image.prototype.assess = function(ppi, selectedTrimSizeInPixels, imageUsage) {
-	this.ppi = ppi;
-	this.selectedTrimSize = selectedTrimSizeInPixels;
-	this.imageUsage = imageUsage;
-
-	this.benchmarks = this.getBenchmarks(selectedTrimSizeInPixels, imageUsage);
-
-	this.resultProperties = {
-		'best': {
-			'colourStyle': "success",
-			'progressBarValue': 100,
-			'thumb': 'up'
-		},
-		'better': {
-			'colourStyle': "info",
-			'progressBarValue': 75,
-			'thumb': 'up'
-		},
-		'good': {
-			'colourStyle': "warning",
-			'progressBarValue': 50,
-			'thumb': 'down'
-		},
-		'bad': {
-			'colourStyle': "danger",
-			'progressBarValue': 25,
-			'thumb': 'down'
-		}
-	};
-
-	this.result = this.getAssessmentResult();
+	var benchmarks = this.getBenchmarks(selectedTrimSizeInPixels, imageUsage);
+	return getAssessmentResult(img, benchmarks);
 };
 
 Image.prototype.meetsOrExceeds = function(benchmark) {
