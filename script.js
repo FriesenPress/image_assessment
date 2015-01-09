@@ -1,9 +1,9 @@
 ////// DEFAULT VARIABLES
 
 var DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD = 1.5;
-var DEFAULT_ENLARGEMENT_TOLERANCE_PCT = 1.25;
+var DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT = 1.25;
 var DEFAULT_IMAGE_URL = 'http://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Shakespeare.jpg/800px-Shakespeare.jpg';
-var DEFAULT_INTERIOR_IMAGE_TOLERANCE_PCT = .75;
+var DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT = .75;
 var DEFAULT_PPI = 300;
 var DEFAULT_TRIM_SIZES = [
 	{'width': 5, 	'height': 5},
@@ -45,12 +45,12 @@ var Assessment = function(img) {
     this.img = img;
 };
 
-Assessment.prototype.resolutionComment = function(ppi, requiredResize, enlargementTolerancePct) {
+Assessment.prototype.resolutionComment = function(ppi, requiredResize, enlargementTolerancePercent) {
     var printWidth = ( this.img.printWidth(ppi) ).toFixed(1);
     var printHeight = ( this.img.printHeight(ppi) ).toFixed(1);
 	var baseComment = 	"Assuming no cropping, this image can be printed at up to " +
 						printWidth + "\" by " + printHeight + "\" without losing any resolution, " +
-						"or at up to about " + (printWidth * enlargementTolerancePct) + "\" by " + (printHeight * enlargementTolerancePct) +
+						"or at up to about " + (printWidth * enlargementTolerancePercent) + "\" by " + (printHeight * enlargementTolerancePercent) +
 						"\" with some minor loss of quality.\n\n";
     var specificComment;
     if (requiredResize <= 0) {
@@ -67,23 +67,23 @@ Assessment.prototype.resolutionComment = function(ppi, requiredResize, enlargeme
 
 
 Assessment.prototype.aspectRatioComment = function(imageUsage, targetWidth, targetHeight, warningThreshold) {
-    var actualWidthAsPctOfHeight = this.width / this.height;
-    var targetWidthAsPctOfHeight; // width divided by height
+    var actualWidthAsPercentOfHeight = this.width / this.height;
+    var targetWidthAsPercentOfHeight; // width divided by height
     if (imageUsage == 'cover' || imageUsage == 'interior') {
-        targetWidthAsPctOfHeight = targetWidth / targetHeight;
+        targetWidthAsPercentOfHeight = targetWidth / targetHeight;
     } else if (imageUsage == 'spread') {
-        targetWidthAsPctOfHeight = ( targetWidth * 2) / targetHeight;
+        targetWidthAsPercentOfHeight = ( targetWidth * 2) / targetHeight;
     } else { // shouldn't happen
-        targetWidthAsPctOfHeight = 1;
+        targetWidthAsPercentOfHeight = 1;
     }
     var comment;
-    // WidthAsPctOfHeight.  if 1, the image is a square.  If <1, image is portrait (all trim sizes).  If >1, image is landscape orientation.
+    // WidthAsPercentOfHeight.  if 1, the image is a square.  If <1, image is portrait (all trim sizes).  If >1, image is landscape orientation.
     if ( imageUsage =='interior') {
         comment = 'Aspect ratio assessment is not applicable to interior images.';
         return comment;
-    } else if ( (actualWidthAsPctOfHeight * warningThreshold) < targetWidthAsPctOfHeight ) {
+    } else if ( (actualWidthAsPercentOfHeight * warningThreshold) < targetWidthAsPercentOfHeight ) {
 		comment = 'The image is proportionately taller and skinnier than the target print space.';
-	} else if ( actualWidthAsPctOfHeight > (targetWidthAsPctOfHeight * warningThreshold) ) {
+	} else if ( actualWidthAsPercentOfHeight > (targetWidthAsPercentOfHeight * warningThreshold) ) {
 		comment = 'The image is proportionately shorter and wider than the target print space.';
 	} else {
 		comment = 'Actual dimensions are similar to target dimensions.';
@@ -95,7 +95,8 @@ Assessment.prototype.aspectRatioComment = function(imageUsage, targetWidth, targ
 
 function initializeForm() {
 	//$( "#image-source-form" ).hide();
-	$( "#input-url-group" ).hide();
+    $( "#preview-url").hide();
+	$( "#input-url" ).hide();
 	$( ".assessment-measurements" ).hide();
 	$( ".assessment-comment" ).hide();
 	$( "#flash" ).hide();
@@ -103,7 +104,7 @@ function initializeForm() {
 	$( ".image-attribute").hide();
 
 	$( ".nailthumb-container" ).nailthumb(
-		{width:100,height:100,method:'resize',fitDirection:'center center'}
+		{width:200,height:200,method:'resize',fitDirection:'center center'}
 		);
 	$( ".ppi" ).text(DEFAULT_PPI);
 
@@ -124,11 +125,31 @@ function initializeForm() {
 } // end of function initializeForm
 
 
+function getTargetDimension(dimension, trimSize, imageUsage, interiorImageTolerance) {
+    var spreadFactor;
+    if (dimension == 'width') {
+        spreadFactor = 2;
+    } else {
+        spreadFactor = 1;
+    }
+
+    var targetDimension;
+    if (imageUsage == 'interior') {
+        targetDimension = trimSize[dimension] * interiorImageTolerance;
+    } else if (imageUsage == 'spread') {
+        targetDimension = trimSize[dimension] * spreadFactor;
+    } else { // 'cover', or any other case
+        targetDimension = trimSize[dimension];
+    }
+    return targetDimension;
+}
+
+
 function previewImageFromURL(url) {
     var img = new Image;
     img.src = url;
     setTimeout(function() {
-        $( ".nailthumb-container" ).nailthumb({width: 100, height: 100, method: 'resize', fitDirection: 'center center'});
+        $( ".nailthumb-container" ).nailthumb({width: 200, height: 200, method: 'resize', fitDirection: 'center center'});
         $( "#input-preview" ).attr('src', url);
         $( ".aspect-ratio" ).text( img.aspectRatioString() );
         $( ".width-value-px" ).text( img.width );
@@ -142,11 +163,49 @@ function setAspectRatioCommentStyle(img, warningThreshold) {
     return 'label label-default'
 }
 
+function initializeAssessment() {
+    $( "#flash" ).hide();
+
+    var trimSize = getTrimSizeInput(DEFAULT_TRIM_SIZES);
+    var imageUsage = getImageUsageInput();
+    var imageSource = getImageSourceInput();
+
+    var targetWidth = getTargetDimension('width', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
+    var targetHeight = getTargetDimension('height', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
+
+    var img = new Image();
+
+    if (imageSource == 'image-from-file') {
+        var file = document.getElementById("input-file").files[0];
+        if (file.type.match(/image.*/)) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                img.src = reader.result;
+                assess(img, DEFAULT_PPI, targetWidth, targetHeight, imageUsage, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD);
+            };
+            reader.readAsDataURL(file);
+        } else { // user didn't upload a valid image file
+            $( "#flash" ).show();
+        }
+    } else { // user wants to assess an image from a url
+        var url = getUrlInput();
+        var inputPreviewSrc = $("#input-preview").attr('src');
+        if (url != inputPreviewSrc) {
+            previewImageFromURL(url);
+        }
+        ;
+        img.onload = function () {
+            assess(img, DEFAULT_PPI, targetWidth, targetHeight, imageUsage, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD);
+        };
+        img.src = url;
+    }
+}
+
 function assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold) {
     var requiredResize = img.requiredResize(ppi, targetWidth, targetHeight);
     var aspectRatioString = img.aspectRatioString();
     var assessment = new Assessment(img);
-    var resolutionComment = assessment.resolutionComment(DEFAULT_PPI, requiredResize, DEFAULT_ENLARGEMENT_TOLERANCE_PCT);
+    var resolutionComment = assessment.resolutionComment(DEFAULT_PPI, requiredResize, DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT);
     var aspectRatioComment = assessment.aspectRatioComment(imageUsage, targetWidth, targetHeight, aspectRatioWarningThreshold);
     var colourStyle, progressBarValue, thumb;
     if (requiredResize < 0) {
@@ -182,15 +241,41 @@ function assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarn
 } // end function assess
 
 
+
+
+// Get the input values
+
+function getTrimSizeInput(trimSizeList) {
+    var trimSizeIndex = $( "#trim-size-options" ).find(":selected").val();
+    return trimSizeList[trimSizeIndex];
+}
+
+function getImageUsageInput() {
+    return $( "#image-use-form input[type='radio']:checked" ).val();
+}
+
+function getImageSourceInput() {
+    return $( "#image-source-form input[type='radio']:checked" ).val();
+}
+
+
+function getUrlInput() {
+    return $("#input-url").val();
+}
+
+
+
+
+
 $(document).ready(function() {
 
 	initializeForm();
 
 	$( "#image-from-url" ).change(function() {
 		if (this.checked) {
-			$( "#input-file-group" ).hide();
+			$( "#input-file" ).hide();
 			$( "#input-url").val(DEFAULT_IMAGE_URL);
-			$( "#input-url-group" ).show();
+			$( "#input-url" ).show();
 	        $( "#input-preview" ).attr('src', "ph.png");
             $( ".image-attribute").hide();
 		}
@@ -198,8 +283,8 @@ $(document).ready(function() {
 
 	$( "#image-from-file" ).change(function() {
 		if (this.checked) {
-			$( "#input-url-group" ).hide();
-			$( "#input-file-group" ).show();
+			$( "#input-url" ).hide();
+			$( "#input-file" ).show();
 	        $( "#input-preview" ).attr('src', "ph.png");
             $( ".image-attribute").hide();
 		}
@@ -217,7 +302,7 @@ $(document).ready(function() {
 		 if (this.files && this.files[0]) {
 	            var reader = new FileReader();
 	            reader.onload = function (e) {
-	            	$( ".nailthumb-container" ).nailthumb({width:100,height:100,method:'resize',fitDirection:'center center'});
+	            	$( ".nailthumb-container" ).nailthumb({width:200,height:200,method:'resize',fitDirection:'center center'});
 	                $( "#input-preview" ).attr('src', e.target.result);
 					var img = new Image();
 					img.src = reader.result;
@@ -231,55 +316,12 @@ $(document).ready(function() {
 	});
 
 	$( "#preview-url" ).on( 'click', function() {
-        var url = $( "#input-url" ).val();
+        var url = getUrlInput();
         previewImageFromURL(url);
 	});
 
 	$( "#assess-image-button" ).on( 'click', function() {
-		$( "#flash" ).hide();
-		// If the 'image from file' radio button is selected...
-        var trimSizeIndex = $( "#trim-size-options" ).find(":selected").val();
-        var trimSize = DEFAULT_TRIM_SIZES[trimSizeIndex];
-        var imageUsage  = $( "#image-use-form input[type='radio']:checked" ).val();
-        var imageSource = $( "#image-source-form input[type='radio']:checked" ).val();
-        var targetWidth;
-        if (imageUsage == 'interior') {
-            targetWidth = trimSize.width * DEFAULT_INTERIOR_IMAGE_TOLERANCE_PCT;
-        } else if (imageUsage == 'spread') {
-            targetWidth = trimSize.width * 2;
-        } else { // 'cover', or any other case
-            targetWidth = trimSize.width;
-        }
-        var targetHeight;
-        if (imageUsage == 'interior') {
-            targetHeight = trimSize.height * DEFAULT_INTERIOR_IMAGE_TOLERANCE_PCT;
-        } else { // 'cover', 'spread', or any other case
-            targetHeight = trimSize.height;
-        }
-        var img = new Image();
-
-        if (imageSource == 'image-from-file') {
-			var file = document.getElementById("input-file").files[0];
-			if (file.type.match(/image.*/)) {
-	  			var reader = new FileReader();
-	  			reader.onload = function() {
-                    img.src = reader.result;
-                    assess(img, DEFAULT_PPI, targetWidth, targetHeight, imageUsage, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD);
-                };
-				reader.readAsDataURL(file);
-			} else { // user didn't upload a valid image file
-				$( "#flash" ).show();
-			}
-		} else { // user wants to assess an image from a url
-            var url = $( "#input-url" ).val();
-            var inputPreviewSrc = $( "#input-preview" ).attr( 'src' );
-            if (url != inputPreviewSrc) {
-                previewImageFromURL(url);
-            };
-            img.onload = function() {
-                assess(img, DEFAULT_PPI, targetWidth, targetHeight, imageUsage, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD);
-            };
-            img.src = url;
-		}
+        initializeAssessment();
 	});
+
 }); // end of document ready function
