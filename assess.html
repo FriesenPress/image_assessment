@@ -14,13 +14,21 @@
 
 <body style="background:#CCC;">
 
-	<div class="alert alert-info alert-dismissible" role="alert">
-	  <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-	  <strong>Note:</strong> Image assessment is based on printing at the industry standard of <span class="ppi"></span> dpi.
-	</div>
-
 	<div class="container">
+
 		<div id="main-window" class="row panel panel-default">
+
+
+            <div id="header" class="row">
+                <div class="col-md-4 main-title">Image Assessment</div>
+                <div class="col-md-8">
+                    <div class="alert alert-info" role="alert">
+                      <strong>Note:</strong> Image assessment is based on printing at the industry standard of <span class="ppi"></span> dpi.
+                    </div>
+                </div>
+            </div>
+
+
             <div class="col-md-6"> <!-- Left area of main view -->
 
 
@@ -88,23 +96,22 @@
 
                 <div id="image-form-group" class="form-group">
                     <label class="control-label" >Image <small>(PNG, JPG, GIF, BMP)</small></label>
-                    <input type="file" class="form-control" id="input-file" >
+                    <div id="invalid-source-flash" class="label label-danger"><strong>Invalid!</strong> Please try again.</div>
+                    <input type="file" class="form-control" id="input-file" accept="image/jpeg,image/gif,image/png,image/bmp" >
                     <input type="text" class="form-control" id="input-url">
                 </div>
 
 
 
-
-                <p id="flash" class="text-center bg-danger">File not supported! Please select an image file.</p>
-
-
-
-                <button type="button" id="assess-image-button" class="btn btn-warning btn-lg"><i class="fa fa-photo"></i> Assess Image</button>
+                <div id="button-area">
+                    <button type="button" id="assess-image-button" class="btn btn-primary btn-lg"><i class="fa fa-photo"></i> Assess Image</button>
+                </div>
 
             </div>  <!-- End of left side -->
 
 
             <div class="col-md-6"> <!-- start of right side of main view -->
+
 
                 <table id="image-preview-area">
                 <label>Preview</label>
@@ -126,10 +133,15 @@
                     </tr>
                 </table>
 
+
+
                 <div id="assessment-panel" class="panel panel-default">
                     <div class="panel-heading"><strong>Assessment</strong></div>
                         <div class="panel-body">
                         <form class="form-horizontal" id="assessment-table">
+
+                            <p id="aspect-ratio-comment" class="alert alert-danger"></p>
+
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Print Width:</label>
                                 <div class="col-sm-9" id="width">
@@ -141,13 +153,6 @@
                                 <label class="col-sm-3 control-label">Print Height:</label>
                                 <div class="col-sm-9" id="height">
                                     <p class="form-control-static assessment-measurements"><span class="height-value-in"></span>"</p>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Aspect Ratio:</label>
-                                <div class="col-sm-9" id="aspect-ratio">
-                                    <p class="form-control-static assessment-measurements"><span id="aspect-ratio-comment" class="label"></span></p>
                                 </div>
                             </div>
 
@@ -164,11 +169,13 @@
                             </div>
                         </form>
                     </div>
+
                 </div>
 
             </div> <!-- end of right side's column -->
 		</div>  <!-- end of container's row -->
 	</div> <!-- end of container -->
+
 
 	<script src="script.js"></script>
 </body>

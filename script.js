@@ -5,6 +5,9 @@ var DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT = 1.25;
 var DEFAULT_IMAGE_URL = 'http://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Shakespeare.jpg/800px-Shakespeare.jpg';
 var DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT = .75;
 var DEFAULT_PPI = 300;
+var DEFAULT_PREVIEW_WIDTH = 200;
+var DEFAULT_PREVIEW_HEIGHT = 200;
+var DEFAULT_PREVIEW_SETTINGS = {width:DEFAULT_PREVIEW_WIDTH,height:DEFAULT_PREVIEW_HEIGHT,method:'resize',fitDirection:'center center'};
 var DEFAULT_TRIM_SIZES = [
 	{'width': 5, 	'height': 5},
 	{'width': 5.5, 	'height': 8.5},
@@ -23,10 +26,13 @@ Image.prototype.printHeight = function(ppi) {
     return this.height / ppi;
 };
 
-Image.prototype.requiredResize = function(ppi, targetWidth, targetHeight) {
+
+Image.prototype.requiredResizeToMatchArea = function(ppi, targetWidth, targetHeight) {
     // Returns the percentage the image must be resized to fully cover the target area at the given ppi.
     return Math.max((targetWidth * ppi - this.width) / this.width, (targetHeight * ppi - this.height) / this.height);
 };
+
+
 
 Image.prototype.aspectRatioString = function() {
 	var aspectRatio;
@@ -67,7 +73,7 @@ Assessment.prototype.resolutionComment = function(ppi, requiredResize, enlargeme
 
 
 Assessment.prototype.aspectRatioComment = function(imageUsage, targetWidth, targetHeight, warningThreshold) {
-    var actualWidthAsPercentOfHeight = this.width / this.height;
+    var actualWidthAsPercentOfHeight = this.img.width / this.img.height;
     var targetWidthAsPercentOfHeight; // width divided by height
     if (imageUsage == 'cover' || imageUsage == 'interior') {
         targetWidthAsPercentOfHeight = targetWidth / targetHeight;
@@ -79,14 +85,11 @@ Assessment.prototype.aspectRatioComment = function(imageUsage, targetWidth, targ
     var comment;
     // WidthAsPercentOfHeight.  if 1, the image is a square.  If <1, image is portrait (all trim sizes).  If >1, image is landscape orientation.
     if ( imageUsage =='interior') {
-        comment = 'Aspect ratio assessment is not applicable to interior images.';
         return comment;
     } else if ( (actualWidthAsPercentOfHeight * warningThreshold) < targetWidthAsPercentOfHeight ) {
 		comment = 'The image is proportionately taller and skinnier than the target print space.';
 	} else if ( actualWidthAsPercentOfHeight > (targetWidthAsPercentOfHeight * warningThreshold) ) {
 		comment = 'The image is proportionately shorter and wider than the target print space.';
-	} else {
-		comment = 'Actual dimensions are similar to target dimensions.';
 	}
 	return comment;
 };
@@ -99,13 +102,10 @@ function initializeForm() {
 	$( "#input-url" ).hide();
 	$( ".assessment-measurements" ).hide();
 	$( ".assessment-comment" ).hide();
-	$( "#flash" ).hide();
-	$( "#aspect-ratio-comment").hide();
+    $( "#invalid-source-flash").hide();
+	$( "#aspect-ratio-comment" ).hide();
 	$( ".image-attribute").hide();
-
-	$( ".nailthumb-container" ).nailthumb(
-		{width:200,height:200,method:'resize',fitDirection:'center center'}
-		);
+	$( ".nailthumb-container" ).nailthumb(DEFAULT_PREVIEW_SETTINGS);
 	$( ".ppi" ).text(DEFAULT_PPI);
 
 	if (window.File && window.FileReader) {
@@ -145,26 +145,21 @@ function getTargetDimension(dimension, trimSize, imageUsage, interiorImageTolera
 }
 
 
-function previewImageFromURL(url) {
+function previewImageFromURL(src) {
     var img = new Image;
-    img.src = url;
-    setTimeout(function() {
-        $( ".nailthumb-container" ).nailthumb({width: 200, height: 200, method: 'resize', fitDirection: 'center center'});
-        $( "#input-preview" ).attr('src', url);
-        $( ".aspect-ratio" ).text( img.aspectRatioString() );
-        $( ".width-value-px" ).text( img.width );
-        $( ".height-value-px" ).text( img.height );
-        $( ".image-attribute" ).show(); // width in px, height in px, aspectRatio str
-    }, 100);
+    img.src = src;
+    $( ".nailthumb-container" ).nailthumb(DEFAULT_PREVIEW_SETTINGS);
+    $( "#input-preview" ).attr('src', src);
+    $( ".aspect-ratio" ).text( img.aspectRatioString() );
+    $( ".width-value-px" ).text( img.width );
+    $( ".height-value-px" ).text( img.height );
+    $( ".image-attribute" ).show(); // width in px, height in px, aspectRatio str
 }
 
-function setAspectRatioCommentStyle(img, warningThreshold) {
-    // TODO make this label-success or label-danger depending on whether aspect ratio is below or above warning threshold
-    return 'label label-default'
-}
 
 function initializeAssessment() {
-    $( "#flash" ).hide();
+    $( "#invalid-source-flash").hide();
+
 
     var trimSize = getTrimSizeInput(DEFAULT_TRIM_SIZES);
     var imageUsage = getImageUsageInput();
@@ -185,16 +180,15 @@ function initializeAssessment() {
             };
             reader.readAsDataURL(file);
         } else { // user didn't upload a valid image file
-            $( "#flash" ).show();
+            $( "#invalid-source-flash").show();
         }
     } else { // user wants to assess an image from a url
         var url = getUrlInput();
-        var inputPreviewSrc = $("#input-preview").attr('src');
-        if (url != inputPreviewSrc) {
-            previewImageFromURL(url);
-        }
-        ;
+        var inputPreviewSrc = $( "#input-preview" ).attr( 'src' );
         img.onload = function () {
+            if (url != inputPreviewSrc) {
+                previewImageFromURL(url);
+            }
             assess(img, DEFAULT_PPI, targetWidth, targetHeight, imageUsage, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD);
         };
         img.src = url;
@@ -202,7 +196,7 @@ function initializeAssessment() {
 }
 
 function assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold) {
-    var requiredResize = img.requiredResize(ppi, targetWidth, targetHeight);
+    var requiredResize = img.requiredResizeToMatchArea(ppi, targetWidth, targetHeight);
     var aspectRatioString = img.aspectRatioString();
     var assessment = new Assessment(img);
     var resolutionComment = assessment.resolutionComment(DEFAULT_PPI, requiredResize, DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT);
@@ -229,8 +223,9 @@ function assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarn
     $( ".width-value-in" ).text( ( img.printWidth(ppi) ).toFixed(1) );
 	$( ".height-value-in" ).text( ( img.printHeight(ppi) ).toFixed(1) );
 	$( ".aspect-ratio" ).text( aspectRatioString );
-	$( "#aspect-ratio-comment" ).text( aspectRatioComment ).show();
-    $( "#aspect-ratio-comment" ).attr( {'class': setAspectRatioCommentStyle(img, aspectRatioWarningThreshold)} );
+	if (typeof aspectRatioComment !== 'undefined') {
+        $("#aspect-ratio-comment").text(aspectRatioComment).show();
+    }
 	$( ".assessment-measurements" ).show();
 	$( ".assessment-comment" ).html( "<i class=\"fa fa-fw fa-thumbs-" + thumb + "\"></i>" + resolutionComment).show();
 	$( ".progress-bar" ).attr(
@@ -260,7 +255,7 @@ function getImageSourceInput() {
 
 
 function getUrlInput() {
-    return $("#input-url").val();
+    return $( "#input-url" ).val();
 }
 
 
@@ -291,34 +286,25 @@ $(document).ready(function() {
 	});
 
 	$( ".form-group" ).change(function() {
-			$( "#flash" ).hide();
+            $( "#invalid-source-flash").hide();
+
 			$( ".assessment-measurements" ).hide();
 			$( ".assessment-comment" ).hide();
-			$( "#aspect-ratio-comment").hide();
+        	$( "#aspect-ratio-comment").hide();
 			$( ".progress-bar" ).attr({	'class': "progress-bar", 'aria-valuenow': 0, style: "width:0%" });
 	});
 
 	$( "#input-file" ).change(function() {
-		 if (this.files && this.files[0]) {
-	            var reader = new FileReader();
-	            reader.onload = function (e) {
-	            	$( ".nailthumb-container" ).nailthumb({width:200,height:200,method:'resize',fitDirection:'center center'});
-	                $( "#input-preview" ).attr('src', e.target.result);
-					var img = new Image();
-					img.src = reader.result;
-					$( ".aspect-ratio" ).text( img.aspectRatioString() );
-					$( ".width-value-px" ).text( img.width );
-					$( ".height-value-px" ).text( img.height );
-					$( ".image-attribute" ).show(); // width in px, height in px, aspectRatio str
+        if (this.files && this.files[0]) {
+	        var reader = new FileReader();
+            reader.onload = function (e) {
+                var src = e.target.result;
+                previewImageFromURL(src);
 	            };
-	            reader.readAsDataURL(this.files[0]);
-	        }
+            reader.readAsDataURL(this.files[0]);
+        }
 	});
 
-	$( "#preview-url" ).on( 'click', function() {
-        var url = getUrlInput();
-        previewImageFromURL(url);
-	});
 
 	$( "#assess-image-button" ).on( 'click', function() {
         initializeAssessment();

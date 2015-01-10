@@ -1,4 +1,11 @@
+.main-title {
+    font-weight: bold;
+    font-size: 1.8em;
+    color: #2b669a;
+}
+
 #main-window {
+    margin-top: 1em;
     box-shadow: 2px 2px 3px #999;
 }
 
@@ -27,6 +34,24 @@
 #image-form-group {
     margin-bottom: 3em;
 }
+
+#button-area {
+    margin-bottom: 3em;
+}
+
+.centered-cell {
+	text-align: center;
+}
+
+.height-attribute {
+    padding-right: 3px;
+}
+
+#assess-image-button {
+    display: block;
+    margin: 0 auto;
+}
+
 
 #image-preview-area {
 	margin-left: auto;
