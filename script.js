@@ -16,7 +16,7 @@ var DEFAULT_TRIM_SIZES = [
 	{'width': 8.5, 	'height': 8.5},
 	{'width': 8.5, 	'height': 11}
 ];
-
+var PLACEHOLDER_IMAGE = "ph.png";
 
 Image.prototype.printWidth = function(ppi) {
     return this.width / ppi;
@@ -46,29 +46,54 @@ Image.prototype.aspectRatioString = function() {
 	return aspectRatio;
 };
 
+Image.prototype.getSizeRating = function(ppi, targetWidth, targetHeight) {
+    var printWidth = this.printWidth(ppi);
+    var printHeight = this.printHeight(ppi);
+    var rating;
+    if (printWidth >= targetWidth && printHeight >= targetHeight ) {
+        rating = 'XL';
+    } else if (printWidth >= targetWidth*.75 && printHeight >= targetHeight*.75 ) {
+        rating = 'L';
+    } else if (printWidth >= targetWidth*.5 && printHeight >= targetHeight*.5 ) {
+        rating = 'M';
+    } else if (printWidth >= targetWidth*.25 && printHeight >= targetHeight*.25 ) {
+        rating = 'S';
+    } else {
+        rating = 'XS';
+    }
+    return rating;
+};
 
 var Assessment = function(img) {
     this.img = img;
 };
 
+Assessment.prototype.assessmentComment = function(imageUsage, requiredResize) {
+    var assessmentComment;
+    if (imageUsage == 'interior') {
+        assessmentComment = "";
+    } else {
+        if (requiredResize <= 0) {
+            assessmentComment = "The resolution of this image should be sufficient.";
+        } else if (requiredResize <= 0.25) {
+            assessmentComment = "Enlargement may be required, but the loss of resolution may not be significant.";
+        } else if (requiredResize <= 0.5) {
+            assessmentComment = "Enlargement would likely be required which would cause significant loss of quality.  It's recommended to use an image with better resolution.";
+        } else {
+            assessmentComment = "This is likely too small.  Please use an image with better resolution."
+        }
+    }
+    return assessmentComment;
+};
+
 Assessment.prototype.resolutionComment = function(ppi, requiredResize, enlargementTolerancePercent) {
     var printWidth = ( this.img.printWidth(ppi) ).toFixed(1);
     var printHeight = ( this.img.printHeight(ppi) ).toFixed(1);
-	var baseComment = 	"Assuming no cropping, this image can be printed at up to " +
+	var resolutionComment = "Assuming no cropping, this image can be printed at up to " +
 						printWidth + "\" by " + printHeight + "\" without losing any resolution, " +
 						"or at up to about " + (printWidth * enlargementTolerancePercent) + "\" by " + (printHeight * enlargementTolerancePercent) +
-						"\" with some minor loss of quality.\n\n";
-    var specificComment;
-    if (requiredResize <= 0) {
-        specificComment = "The resolution of this image should be sufficient.";
-    } else if (requiredResize <= 0.25) {
-        specificComment = "Enlargement may be required, but the loss of resolution may not be significant.";
-    } else if (requiredResize <= 0.5) {
-        specificComment = "Enlargement would likely be required which would cause significant loss of quality.  It's recommended to use an image with better resolution.";
-    } else {
-		specificComment = "This is likely too small.  Please use an image with better resolution."
-	}
-	return baseComment + specificComment;
+						"\" with some minor loss of quality.\n";
+	return resolutionComment;
 };
 
 
@@ -101,6 +126,7 @@ function initializeForm() {
     $( "#preview-url").hide();
 	$( "#input-url" ).hide();
 	$( ".assessment-measurements" ).hide();
+	$( ".resolution-comment" ).hide();
 	$( ".assessment-comment" ).hide();
     $( "#invalid-source-flash").hide();
 	$( "#aspect-ratio-comment" ).hide();
@@ -146,14 +172,16 @@ function getTargetDimension(dimension, trimSize, imageUsage, interiorImageTolera
 
 
 function previewImageFromURL(src) {
-    var img = new Image;
-    img.src = src;
-    $( ".nailthumb-container" ).nailthumb(DEFAULT_PREVIEW_SETTINGS);
-    $( "#input-preview" ).attr('src', src);
-    $( ".aspect-ratio" ).text( img.aspectRatioString() );
-    $( ".width-value-px" ).text( img.width );
-    $( ".height-value-px" ).text( img.height );
-    $( ".image-attribute" ).show(); // width in px, height in px, aspectRatio str
+    var previewImg = new Image;
+    previewImg.onload = function() {
+        $(".nailthumb-container").nailthumb(DEFAULT_PREVIEW_SETTINGS);
+        $("#input-preview").attr('src', src);
+        $(".aspect-ratio").text(previewImg.aspectRatioString());
+        $(".width-value-px").text(previewImg.width);
+        $(".height-value-px").text(previewImg.height);
+        $(".image-attribute").show(); // width in px, height in px, aspectRatio str
+    }
+    previewImg.src = src;
 }
 
 
@@ -176,7 +204,7 @@ function initializeAssessment() {
             var reader = new FileReader();
             reader.onload = function () {
                 img.src = reader.result;
-                assess(img, DEFAULT_PPI, targetWidth, targetHeight, imageUsage, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD);
+                assess(img, DEFAULT_PPI, targetWidth, targetHeight, imageUsage, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD, DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT);
             };
             reader.readAsDataURL(file);
         } else { // user didn't upload a valid image file
@@ -189,50 +217,67 @@ function initializeAssessment() {
             if (url != inputPreviewSrc) {
                 previewImageFromURL(url);
             }
-            assess(img, DEFAULT_PPI, targetWidth, targetHeight, imageUsage, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD);
+            assess(img, DEFAULT_PPI, targetWidth, targetHeight, imageUsage, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD, DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT);
         };
         img.src = url;
     }
 }
 
-function assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold) {
+function assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent) {
     var requiredResize = img.requiredResizeToMatchArea(ppi, targetWidth, targetHeight);
     var aspectRatioString = img.aspectRatioString();
+
     var assessment = new Assessment(img);
-    var resolutionComment = assessment.resolutionComment(DEFAULT_PPI, requiredResize, DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT);
     var aspectRatioComment = assessment.aspectRatioComment(imageUsage, targetWidth, targetHeight, aspectRatioWarningThreshold);
-    var colourStyle, progressBarValue, thumb;
+    var resolutionComment = assessment.resolutionComment(ppi, requiredResize, enlargementTolerancePercent);
+    var assessmentComment = assessment.assessmentComment(imageUsage, requiredResize);
+
+    var colourStyle, progressBarValue, resolutionIcon;
     if (requiredResize < 0) {
         colourStyle = "success";
         progressBarValue = 100;
-        thumb = 'up';
+        resolutionIcon = "<i class=\"fa fa-thumbs-up\"></i>";
     } else if (requiredResize < 0.25) {
         colourStyle = "info";
         progressBarValue = 75;
-        thumb = 'up';
+        resolutionIcon = "<i class=\"fa fa-thumbs-up\"></i>";
     } else if (requiredResize < 0.5) {
         colourStyle = "warning";
         progressBarValue = 50;
-        thumb = 'down';
+        resolutionIcon = "<i class=\"fa fa-thumbs-down\"></i>";
     } else {
         colourStyle = "danger";
         progressBarValue = 25;
-        thumb = 'down';
+        resolutionIcon = "<i class=\"fa fa-thumbs-down\"></i>";
     }
 
-    $( ".width-value-in" ).text( ( img.printWidth(ppi) ).toFixed(1) );
-	$( ".height-value-in" ).text( ( img.printHeight(ppi) ).toFixed(1) );
+    var printWidth = ( img.printWidth(ppi) ).toFixed(1);
+    var printHeight = ( img.printHeight(ppi) ).toFixed(1);
+
+    $( ".width-value-in" ).text( printWidth );
+	$( ".height-value-in" ).text( printHeight );
 	$( ".aspect-ratio" ).text( aspectRatioString );
-	if (typeof aspectRatioComment !== 'undefined') {
-        $("#aspect-ratio-comment").text(aspectRatioComment).show();
-    }
 	$( ".assessment-measurements" ).show();
-	$( ".assessment-comment" ).html( "<i class=\"fa fa-fw fa-thumbs-" + thumb + "\"></i>" + resolutionComment).show();
+
 	$( ".progress-bar" ).attr(
 		{ 	'class': "progress-bar progress-bar-"+colourStyle,
 			'aria-valuenow': progressBarValue,
 			'style': "width:"+progressBarValue+"%" }
 	);
+
+	if (typeof aspectRatioComment !== 'undefined') {
+        $("#aspect-ratio-comment").text(aspectRatioComment).show();
+    }
+
+    if (imageUsage == 'interior') {
+        var sizeRating = img.getSizeRating(ppi, targetWidth, targetHeight);
+        $(".assessment-comment").html("Image size: " + "<span class=\"size-rating-container\"><strong class=\"size-rating\">" + sizeRating + "</strong></span>").show();
+        $( ".resolution-comment" ).html( resolutionComment ).show();
+    } else {
+        $(".assessment-comment").html(assessmentComment).show();
+        $( ".resolution-comment" ).html( resolutionIcon + resolutionComment ).show();
+    }
+
 } // end function assess
 
 
@@ -271,7 +316,7 @@ $(document).ready(function() {
 			$( "#input-file" ).hide();
 			$( "#input-url").val(DEFAULT_IMAGE_URL);
 			$( "#input-url" ).show();
-	        $( "#input-preview" ).attr('src', "ph.png");
+	        $( "#input-preview" ).attr('src', PLACEHOLDER_IMAGE);
             $( ".image-attribute").hide();
 		}
 	});
@@ -280,7 +325,7 @@ $(document).ready(function() {
 		if (this.checked) {
 			$( "#input-url" ).hide();
 			$( "#input-file" ).show();
-	        $( "#input-preview" ).attr('src', "ph.png");
+	        $( "#input-preview" ).attr('src', PLACEHOLDER_IMAGE);
             $( ".image-attribute").hide();
 		}
 	});
@@ -289,6 +334,7 @@ $(document).ready(function() {
             $( "#invalid-source-flash").hide();
 
 			$( ".assessment-measurements" ).hide();
+			$( ".resolution-comment" ).hide();
 			$( ".assessment-comment" ).hide();
         	$( "#aspect-ratio-comment").hide();
 			$( ".progress-bar" ).attr({	'class': "progress-bar", 'aria-valuenow': 0, style: "width:0%" });
