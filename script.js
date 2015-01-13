@@ -26,13 +26,10 @@ Image.prototype.printHeight = function(ppi) {
     return this.height / ppi;
 };
 
-
 Image.prototype.requiredResizeToMatchArea = function(ppi, targetWidth, targetHeight) {
     // Returns the percentage the image must be resized to fully cover the target area at the given ppi.
     return Math.max((targetWidth * ppi - this.width) / this.width, (targetHeight * ppi - this.height) / this.height);
 };
-
-
 
 Image.prototype.aspectRatioString = function() {
 	var aspectRatio;
@@ -64,6 +61,7 @@ Image.prototype.sizeRating = function(ppi, targetWidth, targetHeight) {
     return rating;
 };
 
+
 var Assessment = function(img) {
     this.img = img;
 };
@@ -86,16 +84,14 @@ Assessment.prototype.assessmentComment = function(imageUsage, requiredResize) {
     return assessmentComment;
 };
 
-Assessment.prototype.resolutionComment = function(ppi, requiredResize, enlargementTolerancePercent) {
+Assessment.prototype.resolutionComment = function(ppi, enlargementTolerancePercent) {
     var printWidth = ( this.img.printWidth(ppi) ).toFixed(1);
     var printHeight = ( this.img.printHeight(ppi) ).toFixed(1);
-	var resolutionComment = "Assuming no cropping, this image can be printed at up to " +
+	return "Assuming no cropping, this image can be printed at up to " +
 						printWidth + "\" by " + printHeight + "\" without losing any resolution, " +
 						"or at up to about " + (printWidth * enlargementTolerancePercent) + "\" by " + (printHeight * enlargementTolerancePercent) +
 						"\" with some minor loss of quality.\n";
-	return resolutionComment;
 };
-
 
 Assessment.prototype.aspectRatioComment = function(imageUsage, targetWidth, targetHeight, warningThreshold) {
     var actualWidthAsPercentOfHeight = this.img.width / this.img.height;
@@ -180,36 +176,10 @@ function previewImageFromURL(src) {
         $(".width-value-px").text(previewImg.width);
         $(".height-value-px").text(previewImg.height);
         $(".image-attribute").show(); // width in px, height in px, aspectRatio str
-    }
+    };
     previewImg.src = src;
 }
 
-
-function assess(img, ppi, imageUsage, imageSource, targetWidth, targetHeight, aspectRatioWarningThreshold, enlargementTolerancePercent) {
-    if (imageSource == 'image-from-file') {
-        var file = document.getElementById("input-file").files[0];
-        if (file.type.match(/image.*/)) {
-            var reader = new FileReader();
-            reader.onload = function () {
-                img.src = reader.result;
-                displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent);
-            };
-            reader.readAsDataURL(file);
-        } else { // user didn't upload a valid image file
-            $( "#invalid-source-flash").show();
-        }
-    } else { // user wants to assess an image from a url
-        var url = getUrlInput();
-        var inputPreviewSrc = $( "#input-preview" ).attr( 'src' );
-        img.onload = function () {
-            if (url != inputPreviewSrc) {
-                previewImageFromURL(url);
-            }
-            displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent);
-        };
-        img.src = url;
-    }
-}
 
 function displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent) {
     var requiredResize = img.requiredResizeToMatchArea(ppi, targetWidth, targetHeight);
@@ -217,7 +187,7 @@ function displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspe
 
     var assessment = new Assessment(img);
     var aspectRatioComment = assessment.aspectRatioComment(imageUsage, targetWidth, targetHeight, aspectRatioWarningThreshold);
-    var resolutionComment = assessment.resolutionComment(ppi, requiredResize, enlargementTolerancePercent);
+    var resolutionComment = assessment.resolutionComment(ppi, enlargementTolerancePercent);
     var assessmentComment = assessment.assessmentComment(imageUsage, requiredResize);
 
     var colourStyle, progressBarValue, resolutionIcon;
@@ -269,8 +239,6 @@ function displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspe
 } // end function displayAssessment
 
 
-
-
 // Get the input values
 
 function getTrimSizeInput(trimSizeList) {
@@ -286,13 +254,9 @@ function getImageSourceInput() {
     return $( "#image-source-form input[type='radio']:checked" ).val();
 }
 
-
 function getUrlInput() {
     return $( "#input-url" ).val();
 }
-
-
-
 
 
 $(document).ready(function() {
@@ -342,7 +306,6 @@ $(document).ready(function() {
 
 	$( "#assess-image-button" ).on( 'click', function() {
         $( "#invalid-source-flash").hide();
-        var img = new Image();
 
         var imageSource = getImageSourceInput();
 
@@ -351,7 +314,37 @@ $(document).ready(function() {
         var targetWidth = getTargetDimension('width', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
         var targetHeight = getTargetDimension('height', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
 
-        assess(img, DEFAULT_PPI, imageUsage, imageSource, targetWidth, targetHeight, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD, DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT);
-	});
+        var ppi = DEFAULT_PPI;
+        var aspectRatioWarningThreshold = DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD;
+        var enlargementTolerancePercent = DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT;
 
+        var img = new Image;
+        if (imageSource == 'image-from-file') {
+            var file = document.getElementById("input-file").files[0];
+            if (file.type.match(/image.*/)) {
+                var reader = new FileReader();
+                reader.onload = function () {
+                    img.src = reader.result;
+                    displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent);
+                };
+                reader.readAsDataURL(file);
+            } else { // user didn't upload a valid image file
+                $( "#invalid-source-flash" ).show();
+            }
+        } else { // user wants to assess an image from a url
+            var url = getUrlInput();
+            var inputPreviewSrc = $( "#input-preview" ).attr('src');
+
+            img.onload = function() {
+                if (url != inputPreviewSrc) {
+                    previewImageFromURL(url);
+                }
+                displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent);
+            };
+            img.onerror = function() {
+                $( "#invalid-source-flash" ).show();
+            };
+            img.src = url;
+        }
+	});
 }); // end of document ready function
