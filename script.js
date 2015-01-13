@@ -185,14 +185,14 @@ function previewImageFromURL(src) {
 }
 
 
-function initializeAssessment(img, ppi, imageUsage, imageSource, targetWidth, targetHeight, aspectRatioWarningThreshold, enlargementTolerancePercent) {
+function assess(img, ppi, imageUsage, imageSource, targetWidth, targetHeight, aspectRatioWarningThreshold, enlargementTolerancePercent) {
     if (imageSource == 'image-from-file') {
         var file = document.getElementById("input-file").files[0];
         if (file.type.match(/image.*/)) {
             var reader = new FileReader();
             reader.onload = function () {
                 img.src = reader.result;
-                assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent);
+                displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent);
             };
             reader.readAsDataURL(file);
         } else { // user didn't upload a valid image file
@@ -205,13 +205,13 @@ function initializeAssessment(img, ppi, imageUsage, imageSource, targetWidth, ta
             if (url != inputPreviewSrc) {
                 previewImageFromURL(url);
             }
-            assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent);
+            displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent);
         };
         img.src = url;
     }
 }
 
-function assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent) {
+function displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent) {
     var requiredResize = img.requiredResizeToMatchArea(ppi, targetWidth, targetHeight);
     var aspectRatioString = img.aspectRatioString();
 
@@ -266,7 +266,7 @@ function assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarn
         $( ".resolution-comment" ).html( resolutionIcon + resolutionComment ).show();
     }
 
-} // end function assess
+} // end function displayAssessment
 
 
 
@@ -351,7 +351,7 @@ $(document).ready(function() {
         var targetWidth = getTargetDimension('width', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
         var targetHeight = getTargetDimension('height', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
 
-        initializeAssessment(img, DEFAULT_PPI, imageUsage, imageSource, targetWidth, targetHeight, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD, DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT);
+        assess(img, DEFAULT_PPI, imageUsage, imageSource, targetWidth, targetHeight, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD, DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT);
 	});
 
 }); // end of document ready function
