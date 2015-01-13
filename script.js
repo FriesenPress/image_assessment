@@ -46,7 +46,7 @@ Image.prototype.aspectRatioString = function() {
 	return aspectRatio;
 };
 
-Image.prototype.getSizeRating = function(ppi, targetWidth, targetHeight) {
+Image.prototype.sizeRating = function(ppi, targetWidth, targetHeight) {
     var printWidth = this.printWidth(ppi);
     var printHeight = this.printHeight(ppi);
     var rating;
@@ -185,26 +185,14 @@ function previewImageFromURL(src) {
 }
 
 
-function initializeAssessment() {
-    $( "#invalid-source-flash").hide();
-
-
-    var trimSize = getTrimSizeInput(DEFAULT_TRIM_SIZES);
-    var imageUsage = getImageUsageInput();
-    var imageSource = getImageSourceInput();
-
-    var targetWidth = getTargetDimension('width', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
-    var targetHeight = getTargetDimension('height', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
-
-    var img = new Image();
-
+function initializeAssessment(img, ppi, imageUsage, imageSource, targetWidth, targetHeight, aspectRatioWarningThreshold, enlargementTolerancePercent) {
     if (imageSource == 'image-from-file') {
         var file = document.getElementById("input-file").files[0];
         if (file.type.match(/image.*/)) {
             var reader = new FileReader();
             reader.onload = function () {
                 img.src = reader.result;
-                assess(img, DEFAULT_PPI, targetWidth, targetHeight, imageUsage, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD, DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT);
+                assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent);
             };
             reader.readAsDataURL(file);
         } else { // user didn't upload a valid image file
@@ -217,7 +205,7 @@ function initializeAssessment() {
             if (url != inputPreviewSrc) {
                 previewImageFromURL(url);
             }
-            assess(img, DEFAULT_PPI, targetWidth, targetHeight, imageUsage, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD, DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT);
+            assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent);
         };
         img.src = url;
     }
@@ -270,7 +258,7 @@ function assess(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarn
     }
 
     if (imageUsage == 'interior') {
-        var sizeRating = img.getSizeRating(ppi, targetWidth, targetHeight);
+        var sizeRating = img.sizeRating(ppi, targetWidth, targetHeight);
         $(".assessment-comment").html("Image size: " + "<span class=\"size-rating-container\"><strong class=\"size-rating\">" + sizeRating + "</strong></span>").show();
         $( ".resolution-comment" ).html( resolutionComment ).show();
     } else {
@@ -353,7 +341,17 @@ $(document).ready(function() {
 
 
 	$( "#assess-image-button" ).on( 'click', function() {
-        initializeAssessment();
+        $( "#invalid-source-flash").hide();
+        var img = new Image();
+
+        var imageSource = getImageSourceInput();
+
+        var trimSize = getTrimSizeInput(DEFAULT_TRIM_SIZES);
+        var imageUsage = getImageUsageInput();
+        var targetWidth = getTargetDimension('width', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
+        var targetHeight = getTargetDimension('height', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
+
+        initializeAssessment(img, DEFAULT_PPI, imageUsage, imageSource, targetWidth, targetHeight, DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD, DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT);
 	});
 
 }); // end of document ready function
