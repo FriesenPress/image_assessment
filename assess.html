@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset='utf-8'>
-	<title>Image Assessment Tool</title>
+	<title>Image Assessment</title>
 	<link rel="stylesheet" type="text/css" href="nailthumb/jquery.nailthumb.1.1.min.css">
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
@@ -34,14 +34,14 @@
 
 
                 <div id="trim-size-form-group" class="form-group">
-                    <label>Trim Size</label>
+                    <label title="Select the trim size of the book in which the image will be used.">Trim Size</label>
                     <select class="trim-size form-control" id="trim-size-options"></select>
                 </div>
 
 
 
                 <div id="target-area-panel" class="panel panel-default">
-                    <div class="panel-heading"><strong>Target Area</strong></div>
+                    <div class="panel-heading" title="Select the intended target area of the image within the book."><strong>Target Area</strong></div>
                     <div class="panel-body">
                         <form class="form-group" id="image-use-form">
                             <div class="radio">
@@ -69,7 +69,7 @@
 
 
                 <div id="source-panel" class="panel panel-default">
-                    <div class="panel-heading"><strong>Source</strong></div>
+                    <div class="panel-heading" title="Select where you would like to source the image from."><strong>Source</strong></div>
 
                     <div class="panel-body">
                         <form class="form-group" id="image-source-form">
@@ -122,7 +122,7 @@
                     <tr>
                         <td><small class="height-attribute image-attribute"><span class="height-value-px"></span> px (H)</small></td>
                         <td>
-                            <div class="nailthumb-container square-thumb" style="display:inline;">
+                            <div class="preview-container square-thumb" style="display:inline;">
                                 <img id="input-preview" src="ph.png" />
                             </div>
                         </td>
@@ -140,19 +140,19 @@
                         <div class="panel-body">
                         <form class="form-horizontal" id="assessment-table">
 
-                            <p id="aspect-ratio-comment" class="alert alert-danger"></p>
+                            <p id="aspect-ratio-comment" class="alert alert-danger result"></p>
 
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Print Width:</label>
-                                <div class="col-sm-9" id="width">
-                                    <p class="form-control-static assessment-measurements"><span class="width-value-in"></span>"</p>
+                                <div class="col-sm-9">
+                                    <p class="form-control-static print-measurements result"><span class="print-width"></span>"</p>
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <label class="col-sm-3 control-label">Print Height:</label>
-                                <div class="col-sm-9" id="height">
-                                    <p class="form-control-static assessment-measurements"><span class="height-value-in"></span>"</p>
+                                <div class="col-sm-9">
+                                    <p class="form-control-static print-measurements result"><span class="print-height"></span>"</p>
                                 </div>
                             </div>
 
@@ -163,9 +163,8 @@
                                         <div class="progress">
                                             <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                         </div>
-                                        <p class="resolution-comment"></p>
-                                        <br>
-                                        <p class="assessment-comment"></p>
+                                        <p class="resolution-comment result"></p>
+                                        <p class="assessment-comment result"></p>
                                     </div>
                                 </div>
                             </div>

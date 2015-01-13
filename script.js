@@ -119,16 +119,15 @@ Assessment.prototype.aspectRatioComment = function(imageUsage, targetWidth, targ
 
 function initializeForm() {
 	//$( "#image-source-form" ).hide();
-    $( "#preview-url").hide();
-	$( "#input-url" ).hide();
-	$( ".assessment-measurements" ).hide();
-	$( ".resolution-comment" ).hide();
-	$( ".assessment-comment" ).hide();
-    $( "#invalid-source-flash").hide();
-	$( "#aspect-ratio-comment" ).hide();
-	$( ".image-attribute").hide();
-	$( ".nailthumb-container" ).nailthumb(DEFAULT_PREVIEW_SETTINGS);
 	$( ".ppi" ).text(DEFAULT_PPI);
+
+    $( "#invalid-source-flash").hide();
+	$( "#input-url" ).hide();
+
+    $( ".result" ).hide();
+
+    $( ".image-attribute").hide();
+	$( ".preview-container" ).nailthumb(DEFAULT_PREVIEW_SETTINGS);
 
 	if (window.File && window.FileReader) {
 		// Great success! All the File APIs are supported.
@@ -170,7 +169,7 @@ function getTargetDimension(dimension, trimSize, imageUsage, interiorImageTolera
 function previewImageFromURL(src) {
     var previewImg = new Image;
     previewImg.onload = function() {
-        $(".nailthumb-container").nailthumb(DEFAULT_PREVIEW_SETTINGS);
+        $(".preview-container").nailthumb(DEFAULT_PREVIEW_SETTINGS);
         $("#input-preview").attr('src', src);
         $(".aspect-ratio").text(previewImg.aspectRatioString());
         $(".width-value-px").text(previewImg.width);
@@ -212,10 +211,10 @@ function displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspe
     var printWidth = ( img.printWidth(ppi) ).toFixed(1);
     var printHeight = ( img.printHeight(ppi) ).toFixed(1);
 
-    $( ".width-value-in" ).text( printWidth );
-	$( ".height-value-in" ).text( printHeight );
+    $( ".print-width" ).text( printWidth );
+	$( ".print-height" ).text( printHeight );
 	$( ".aspect-ratio" ).text( aspectRatioString );
-	$( ".assessment-measurements" ).show();
+	$( ".print-measurements" ).show();
 
 	$( ".progress-bar" ).attr(
 		{ 	'class': "progress-bar progress-bar-"+colourStyle,
@@ -224,15 +223,15 @@ function displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspe
 	);
 
 	if (typeof aspectRatioComment !== 'undefined') {
-        $("#aspect-ratio-comment").text(aspectRatioComment).show();
+        $( "#aspect-ratio-comment" ).text( aspectRatioComment ).show();
     }
 
     if (imageUsage == 'interior') {
         var sizeRating = img.sizeRating(ppi, targetWidth, targetHeight);
-        $(".assessment-comment").html("Image size: " + "<span class=\"size-rating-container\"><strong class=\"size-rating\">" + sizeRating + "</strong></span>").show();
+        $( ".assessment-comment" ).html("Image size: " + "<span class=\"size-rating-container\"><strong class=\"size-rating\">" + sizeRating + "</strong></span>").show();
         $( ".resolution-comment" ).html( resolutionComment ).show();
     } else {
-        $(".assessment-comment").html(assessmentComment).show();
+        $( ".assessment-comment" ).html( assessmentComment ).show();
         $( ".resolution-comment" ).html( resolutionIcon + resolutionComment ).show();
     }
 
@@ -284,11 +283,7 @@ $(document).ready(function() {
 
 	$( ".form-group" ).change(function() {
             $( "#invalid-source-flash").hide();
-
-			$( ".assessment-measurements" ).hide();
-			$( ".resolution-comment" ).hide();
-			$( ".assessment-comment" ).hide();
-        	$( "#aspect-ratio-comment").hide();
+			$( ".result" ).hide();
 			$( ".progress-bar" ).attr({	'class': "progress-bar", 'aria-valuenow': 0, style: "width:0%" });
 	});
 
