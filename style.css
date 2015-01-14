@@ -1,3 +1,5 @@
+/*General*/
+
 .bg {
     background: #CCC;
 }
@@ -13,20 +15,18 @@
     box-shadow: 2px 2px 3px #999;
 }
 
+#input-panel,
+#assessment-panel {
+    height: 566px;
+}
+
 .row {
     padding: 1.4em;
 }
 
-.image-from-url-radio {
-    margin-left: 0.7em;
-}
-
-.image-source-icon {
-    margin-left: 0.3em;
-}
-
-#image-source-form {
-    margin-top: 0.6em;
+.print-size-row,
+.suitability-row {
+    height: 228px;
 }
 
 #trim-size-form-group,
@@ -34,16 +34,29 @@
     margin-bottom: 3em;
 }
 
+
+
+/*Radio buttons*/
+
+.radio-right {
+    margin-left: 0.7em;
+}
+
+.inline-radio-icon {
+    margin-left: 0.3em;
+}
+
+
+
+
+/*Image preview and button*/
+
 .centered-cell {
 	text-align: center;
 }
 
 .height-attribute {
     padding-right: 3px;
-}
-
-#assess-image-button {
-    float: left;
 }
 
 #image-preview-area {
@@ -54,18 +67,22 @@
 	float: right;
 }
 
-.inline-block {
-	display: inline;
-}
-
 .inline-block-container {
 	vertical-align: bottom;
 }
 
-.print-size-row,
-.suitability-row {
-    height: 200px;
+.inline-block {
+	display: inline;
 }
+
+#assess-image-button {
+    float: left;
+}
+
+
+
+
+/*XS, S, M, L, XL circles*/
 
 .size-rating-container {
     background: #efefef;
