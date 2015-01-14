@@ -23,6 +23,8 @@ var DEFAULT_TRIM_SIZES = [
 
 
 function initializeForm() {
+    $('[data-toggle="tooltip"]').tooltip();
+
 	//$( "#image-source-form" ).hide();
 	$( ".ppi" ).text(DEFAULT_PPI);
 
@@ -59,9 +61,9 @@ function getTrimSizeInput(trimSizeList) {
     return trimSizeList[trimSizeIndex];
 }
 
-function getImageUsageInput() {
+/*function getImageUsageInput() {
     return $( "#image-use-form input[type='radio']:checked" ).val();
-}
+}*/
 
 function getImageSourceInput() {
     return $( "#image-source-form input[type='radio']:checked" ).val();
@@ -75,11 +77,11 @@ function getUrlInput() {
 // Calculation functions
 
 function getTargetDimension(dimension, trimSize, imageUsage, interiorImageTolerance) {
-    var spreadFactor = ((dimension == 'width') ? 2 : 1);
     var targetDimension;
     if (imageUsage == 'interior') {
         targetDimension = trimSize[dimension] * interiorImageTolerance;
     } else if (imageUsage == 'spread') {
+        var spreadFactor = ((dimension == 'width') ? 2 : 1);
         targetDimension = trimSize[dimension] * spreadFactor;
     } else { // 'cover', or any other case
         targetDimension = trimSize[dimension];
@@ -141,17 +143,17 @@ function previewImageFromURL(src) {
     previewImg.src = src;
 }
 
-function displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent) {
-    if (img.aspectRatioWarningThresholdExceeded()) {
+function displayAssessment(img, ppi, targetWidth, targetHeight, aspectRatioWarningThreshold, enlargementTolerancePercent) {
+    if (img.aspectRatioWarningThresholdExceeded(targetWidth, targetHeight, aspectRatioWarningThreshold)) {
         var aspectRatioComment = img.aspectRatioComment(targetWidth, targetHeight, aspectRatioWarningThreshold);
         $( "#aspect-ratio-comment" ).text( aspectRatioComment ).show();
     }
 
-    var printWidth = ( img.printWidth(ppi) ).toFixed(1);
+/*    var printWidth = ( img.printWidth(ppi) ).toFixed(1);
     var printHeight = ( img.printHeight(ppi) ).toFixed(1);
     $( ".print-width" ).text( printWidth );
 	$( ".print-height" ).text( printHeight );
-	$( ".print-measurements" ).show();
+	$( ".print-measurements" ).show();*/
 
     var printSizeComment = img.printSizeComment(ppi, enlargementTolerancePercent);
     $( ".print-size-comment" ).html( printSizeComment ).show();
@@ -160,8 +162,7 @@ function displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspe
     var requiredResize = img.requiredResizeToMatchArea(ppi, targetWidth, targetHeight);
 
     var sizeRating = img.sizeRating(ppi, targetWidth, targetHeight);
-    $( ".size-rating").text( sizeRating );
-    $( ".size-rating-container").show();
+    $( ".size-"+sizeRating).attr('id', "rated-size");
 
     var progressBarValue = getProgressBarValue(requiredResize);
     var progressBarColour = getProgressBarColour(requiredResize);
@@ -206,6 +207,7 @@ $(document).ready(function() {
             $( "#invalid-source-flash").hide();
 			$( ".result" ).hide();
             $( ".progress").hide();
+            $( ".size-rating-container").removeAttr('id');
 			//$( ".progress-bar" ).attr({	'class': "progress-bar", 'aria-valuenow': 0, style: "width:0%" });
 	});
 
@@ -220,6 +222,10 @@ $(document).ready(function() {
         }
 	});
 
+    $( "#suitability-button").on( 'click', function() {
+        var imageUsage = getImageUsageInput();
+        $('#myModal').modal('toggle')
+    })
 
 	$( "#assess-image-button" ).on( 'click', function() {
         $( "#invalid-source-flash").hide();
@@ -227,10 +233,11 @@ $(document).ready(function() {
         var imageSource = getImageSourceInput();
 
         var trimSize = getTrimSizeInput(DEFAULT_TRIM_SIZES);
-        var imageUsage = getImageUsageInput();
-        var targetWidth = getTargetDimension('width', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
-        var targetHeight = getTargetDimension('height', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
+        //var imageUsage = getImageUsageInput();
+        var targetWidth = getTargetDimension('width', trimSize, 'interior', DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
+        var targetHeight = getTargetDimension('height', trimSize, 'interior', DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
 
+        console.log(targetWidth, targetHeight)
         var ppi = DEFAULT_PPI;
         var aspectRatioWarningThreshold = DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD;
         var enlargementTolerancePercent = DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT;
@@ -242,7 +249,7 @@ $(document).ready(function() {
                 var reader = new FileReader();
                 reader.onload = function () {
                     img.src = reader.result;
-                    displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent);
+                    displayAssessment(img, ppi, targetWidth, targetHeight, aspectRatioWarningThreshold, enlargementTolerancePercent);
                 };
                 reader.readAsDataURL(file);
             } else { // user didn't upload a valid image file
@@ -256,7 +263,7 @@ $(document).ready(function() {
                 if (url != inputPreviewSrc) {
                     previewImageFromURL(url);
                 }
-                displayAssessment(img, ppi, targetWidth, targetHeight, imageUsage, aspectRatioWarningThreshold, enlargementTolerancePercent);
+                displayAssessment(img, ppi, targetWidth, targetHeight, aspectRatioWarningThreshold, enlargementTolerancePercent);
             };
             img.onerror = function() {
                 $( "#invalid-source-flash" ).show();

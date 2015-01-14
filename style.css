@@ -17,6 +17,18 @@
     padding: 1.4em;
 }
 
+.image-from-url-radio {
+    margin-left: 0.7em;
+}
+
+.image-source-icon {
+    margin-left: 0.3em;
+}
+
+#image-source-form {
+    margin-top: 0.6em;
+}
+
 #trim-size-form-group,
 #image-form-group {
     margin-bottom: 3em;
@@ -50,17 +62,39 @@
 	vertical-align: bottom;
 }
 
-.size-rating-container {
-    background: #2b669a;
-    height: 0.8em;
-    width: 0.8em;
-    border-radius: 50%;
-    padding: 2%;
-    text-align: center;
+.print-size-row,
+.suitability-row {
+    height: 200px;
 }
 
-.size-rating {
-    font-size: 0.8em;
-    margin: 0;
-    color: #e6e6e6;
+.size-rating-container {
+    background: #efefef;
+    border-radius: 50%;
+    padding: 8px;
+    width: 1.8em;
+    font-size: 1.4em;
+    font-weight: bold;
+    position: relative;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+    float: left;
+}
+
+#rated-size {
+    background: #ff0000;
+}
+
+.size-rating-container .height-fix {
+    margin-top: 100%;
+}
+
+.size-rating-container .size-rating {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    margin-top: -0.7em;
+    color: #b8b8b8;
 }

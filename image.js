@@ -47,7 +47,7 @@ Image.prototype.sizeRating = function(ppi, targetWidth, targetHeight) {
 Image.prototype.printSizeComment = function(ppi, enlargementTolerancePercent) {
     var printWidth = ( this.printWidth( ppi) ).toFixed(1);
     var printHeight = ( this.printHeight( ppi) ).toFixed(1);
-	return "Assuming no cropping, this image can be printed at up to " +
+	return "This image can be printed at up to " +
 						printWidth + "\" by " + printHeight + "\" without losing any resolution, " +
 						"or at up to about " + (printWidth * enlargementTolerancePercent) + "\" by " + (printHeight * enlargementTolerancePercent) +
 						"\" with some minor loss of quality.\n";
@@ -71,6 +71,7 @@ Image.prototype.assessmentComment = function(requiredResize) {
 Image.prototype.aspectRatioWarningThresholdExceeded = function(targetWidth, targetHeight, warningThreshold) {
     var actualWidthAsPercentOfHeight = this.width / this.height;
     var targetWidthAsPercentOfHeight = targetWidth / targetHeight;
+    console.log(actualWidthAsPercentOfHeight, targetWidthAsPercentOfHeight)
     return Boolean((actualWidthAsPercentOfHeight * warningThreshold) < targetWidthAsPercentOfHeight || actualWidthAsPercentOfHeight > (targetWidthAsPercentOfHeight * warningThreshold));
 };
 
