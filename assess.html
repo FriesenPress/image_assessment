@@ -31,8 +31,6 @@
 
             <div class="col-md-6"> <!-- Left area of main view -->
 
-
-
                 <div id="trim-size-form-group" class="form-group">
                     <label title="Select the trim size of the book in which the image will be used.">Trim Size</label>
                     <select class="trim-size form-control" id="trim-size-options"></select>
@@ -40,7 +38,7 @@
 
 
 
-                <div id="target-area-panel" class="panel panel-default">
+<!--                <div id="target-area-panel" class="panel panel-default">
                     <div class="panel-heading" title="Select the intended target area of the image within the book."><strong>Target Area</strong></div>
                     <div class="panel-body">
                         <form class="form-group" id="image-use-form">
@@ -64,122 +62,137 @@
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>-->
 
 
-
+<!--
                 <div id="source-panel" class="panel panel-default">
                     <div class="panel-heading" title="Select where you would like to source the image from."><strong>Source</strong></div>
 
                     <div class="panel-body">
-                        <form class="form-group" id="image-source-form">
 
-                            <div class="radio">
-                              <label class="radio-inline">
-                                <input type="radio" name="image-source" id="image-from-file" value="image-from-file" checked>
-                                <i class="fa fa-file-o"></i> File
-                              </label>
-                            </div>
-
-                            <div class="radio">
-                              <label class="radio-inline">
-                                <input type="radio" name="image-source" id="image-from-url" value="image-from-url" >
-                                <i class="fa fa-link"></i> URL
-                              </label>
-                            </div>
-
-                        </form>
                     </div>
-                </div>
+                </div>-->
 
 
 
                 <div id="image-form-group" class="form-group">
                     <label class="control-label" >Image <small>(PNG, JPG, GIF, BMP)</small></label>
+
                     <div id="invalid-source-flash" class="label label-danger"><strong>Invalid!</strong> Please try again.</div>
+
                     <input type="file" class="form-control" id="input-file" accept="image/jpeg,image/gif,image/png,image/bmp" >
                     <input type="text" class="form-control" id="input-url">
+
+                    <form class="form-group form-inline" id="image-source-form">
+                        <div class="radio">
+                          <label class="radio-inline">
+                            <input type="radio" name="image-source" id="image-from-file" value="image-from-file" checked>
+                            <i class="fa fa-file-o"></i> File
+                          </label>
+                        </div>
+
+                        <div class="radio">
+                          <label class="radio-inline">
+                            <input type="radio" name="image-source" id="image-from-url" value="image-from-url" >
+                            <i class="fa fa-link"></i> URL
+                          </label>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="button-area" class="inline-block-container">
+                    <div class="inline-block">
+                        <button type="button" id="assess-image-button" class="btn btn-primary btn-lg"><i class="fa fa-photo"></i> Assess Image</button>
+                    </div>
+
+                    <div id="image-preview-area" class="inline-block">
+                        <table>
+                            <tr>
+                                <td></td>
+                                <td class="centered-cell"><small class="image-attribute"><span class="aspect-ratio"></span> (W:H)</small></td>
+                            </tr>
+                            <tr>
+                                <td><small class="height-attribute image-attribute"><span class="height-value-px"></span> px (H)</small></td>
+                                <td>
+                                    <div class="preview-container square-thumb" style="display:inline;">
+                                        <img id="input-preview" src="ph.png" />
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td class="centered-cell"><small class="image-attribute"><span class="width-value-px"></span> px (W)</small></td>
+                            </tr>
+                        </table>
+                    </div>
                 </div>
 
 
-
-                <div id="button-area">
-                    <button type="button" id="assess-image-button" class="btn btn-primary btn-lg"><i class="fa fa-photo"></i> Assess Image</button>
-                </div>
 
             </div>  <!-- End of left side -->
 
 
+
+
             <div class="col-md-6"> <!-- start of right side of main view -->
 
-
-                <table id="image-preview-area">
-                <label>Preview</label>
-                    <tr>
-                        <td></td>
-                        <td class="centered-cell"><small class="image-attribute"><span class="aspect-ratio"></span> (W:H)</small></td>
-                    </tr>
-                    <tr>
-                        <td><small class="height-attribute image-attribute"><span class="height-value-px"></span> px (H)</small></td>
-                        <td>
-                            <div class="preview-container square-thumb" style="display:inline;">
-                                <img id="input-preview" src="ph.png" />
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td class="centered-cell"><small class="image-attribute"><span class="width-value-px"></span> px (W)</small></td>
-                    </tr>
-                </table>
-
-
-
-                <div id="assessment-panel" class="panel panel-default">
+                <div id="assessment-panel" class="panel panel-default panel-default">
                     <div class="panel-heading"><strong>Assessment</strong></div>
-                        <div class="panel-body">
-                        <form class="form-horizontal" id="assessment-table">
+                    <div class="panel-body">
+                        <p id="aspect-ratio-comment" class="alert alert-danger result"></p>
 
-                            <p id="aspect-ratio-comment" class="alert alert-danger result"></p>
-
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Print Width:</label>
-                                <div class="col-sm-9">
-                                    <p class="form-control-static print-measurements result"><span class="print-width"></span>"</p>
-                                </div>
+                        <div class="row">
+                            <label class="col-sm-3">Print Size:</label>
+                            <div class="col-sm-9">
+                                <p class="print-measurements result">
+                                    <span class="print-width"></span>" x <span class="print-height"></span>"
+                                    <span class="size-rating-container result"><strong class="size-rating"></strong></span>
+                                </p>
+                                <p class="print-size-comment result"></p>
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Print Height:</label>
-                                <div class="col-sm-9">
-                                    <p class="form-control-static print-measurements result"><span class="print-height"></span>"</p>
+                        <div class="row">
+                            <label class="col-sm-3">Full-size Suitability: <small data-toggle="modal" data-target="#myModal">Change</small></label>
+                            <div class="col-sm-9">
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                 </div>
+                                <p class="assessment-comment result"></p>
                             </div>
-
-                            <div class="form-group">
-                                <label class="col-sm-3 control-label">Resolution:</label>
-                                <div class="col-sm-9">
-                                    <div class="form-control-static assessment-form">
-                                        <div class="progress">
-                                            <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                        <p class="resolution-comment result"></p>
-                                        <p class="assessment-comment result"></p>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                        </form>
+                        </div>
                     </div>
 
                 </div>
 
+
             </div> <!-- end of right side's column -->
+
+
 		</div>  <!-- end of container's row -->
 	</div> <!-- end of container -->
 
+        <!-- Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+          </div>
+          <div class="modal-body">
+            ...
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    <script src="image.js"></script>
 	<script src="script.js"></script>
 </body>
 </html>

@@ -18,11 +18,7 @@
 }
 
 #trim-size-form-group,
-#target-area-panel,
-#source-panel,
-#image-form-group,
-#button-area,
-#image-preview-area {
+#image-form-group {
     margin-bottom: 3em;
 }
 
@@ -35,13 +31,11 @@
 }
 
 #assess-image-button {
-    display: block;
-    margin: 0 auto;
+    float: left;
 }
 
 #image-preview-area {
-	margin-left: auto;
-	margin-right: auto;
+	float: right;
 }
 
 .preview-container {
@@ -50,6 +44,10 @@
 
 .inline-block {
 	display: inline;
+}
+
+.inline-block-container {
+	vertical-align: bottom;
 }
 
 .size-rating-container {
