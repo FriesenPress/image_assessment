@@ -33,7 +33,6 @@ function initializeForm() {
 
     $( ".result" ).hide();
 
-
     $( ".image-attribute").hide();
 	$( ".preview-container" ).nailthumb(DEFAULT_PREVIEW_SETTINGS);
 
@@ -80,10 +79,10 @@ function getTargetDimension(dimension, trimSize, imageUsage, interiorImageTolera
     var targetDimension;
     if (imageUsage == 'interior') {
         targetDimension = trimSize[dimension] * interiorImageTolerance;
-    } else if (imageUsage == 'spread') {
+    } else if (imageUsage == 'Full Spread') {
         var spreadFactor = ((dimension == 'width') ? 2 : 1);
         targetDimension = trimSize[dimension] * spreadFactor;
-    } else { // 'cover', or any other case
+    } else { // 'Full Page', or any other case
         targetDimension = trimSize[dimension];
     }
     return targetDimension;
@@ -144,6 +143,9 @@ function previewImageFromURL(src) {
 }
 
 function displayAspectRatio(img, targetWidth, targetHeight, aspectRatioWarningThreshold) {
+    console.log('Target values (width, height): ', targetWidth, targetHeight);
+    console.log('Aspect Ratio Warning Threshold value: ', aspectRatioWarningThreshold);
+
     if (img.aspectRatioWarningThresholdExceeded(targetWidth, targetHeight, aspectRatioWarningThreshold)) {
         var aspectRatioComment = img.aspectRatioComment(targetWidth, targetHeight, aspectRatioWarningThreshold);
         $("#aspect-ratio-comment").text(aspectRatioComment).show();
@@ -151,6 +153,10 @@ function displayAspectRatio(img, targetWidth, targetHeight, aspectRatioWarningTh
 }
 
 function displayPrintInfo(img, ppi, targetWidth, targetHeight, enlargementTolerancePercent) {
+    console.log('Actual values (width, height): ', img.printWidth(ppi), img.printHeight(ppi));
+    console.log('PPI value: ', ppi);
+    console.log('Enlargement Tolerance Percentage value: ', enlargementTolerancePercent);
+
     var printSizeComment = img.printSizeComment(ppi, enlargementTolerancePercent);
     $(".print-size-comment").html(printSizeComment).show();
 
@@ -171,7 +177,6 @@ function displayAssessment(img, requiredResize) {
     var assessmentComment = img.assessmentComment(requiredResize);
     var assessmentIcon = getAssessmentIcon(requiredResize);
     $( ".assessment-comment" ).html( assessmentIcon + ' ' + assessmentComment ).show();
-
 } // end function displayAssessment
 
 
@@ -228,6 +233,7 @@ $(document).ready(function() {
 
         var trimSize = getTrimSizeInput(DEFAULT_TRIM_SIZES);
         var imageUsage = getImageUsageInput();
+
         var targetWidth = getTargetDimension('width', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
         var targetHeight = getTargetDimension('height', trimSize, imageUsage, DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT);
 
@@ -242,6 +248,7 @@ $(document).ready(function() {
                     displayAspectRatio(img, targetWidth, targetHeight, aspectRatioWarningThreshold);
                     displayPrintInfo(img, ppi, targetWidth, targetHeight, enlargementTolerancePercent);
                     requiredResize = img.requiredResizeToMatchArea(ppi, targetWidth, targetHeight);
+                    console.log('Required Resize value: ', requiredResize);
                     displayAssessment(img, requiredResize);
                 };
                 reader.readAsDataURL(file);
@@ -259,6 +266,7 @@ $(document).ready(function() {
                 displayAspectRatio(img, targetWidth, targetHeight, aspectRatioWarningThreshold);
                 displayPrintInfo(img, ppi, targetWidth, targetHeight, enlargementTolerancePercent);
                 requiredResize = img.requiredResizeToMatchArea(ppi, targetWidth, targetHeight);
+                console.log('Required Resize value: ', requiredResize);
                 displayAssessment(img, requiredResize);
             };
             img.onerror = function() {

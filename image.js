@@ -71,7 +71,7 @@ Image.prototype.assessmentComment = function(requiredResize) {
 Image.prototype.aspectRatioWarningThresholdExceeded = function(targetWidth, targetHeight, warningThreshold) {
     var actualWidthAsPercentOfHeight = this.width / this.height;
     var targetWidthAsPercentOfHeight = targetWidth / targetHeight;
-    console.log(actualWidthAsPercentOfHeight, targetWidthAsPercentOfHeight)
+    console.log('Width as % of Height (target, actual): ', actualWidthAsPercentOfHeight, targetWidthAsPercentOfHeight)
     return Boolean((actualWidthAsPercentOfHeight * warningThreshold) < targetWidthAsPercentOfHeight || actualWidthAsPercentOfHeight > (targetWidthAsPercentOfHeight * warningThreshold));
 };
 

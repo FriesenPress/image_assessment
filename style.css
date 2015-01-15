@@ -86,6 +86,7 @@
 
 .size-rating-container {
     background: #efefef;
+    color: #b8b8b8;
     border-radius: 50%;
     padding: 8px;
     width: 1.8em;
@@ -98,7 +99,8 @@
 }
 
 #rated-size {
-    background: #ff0000;
+    background: #2b669a;
+    color: #ffffff;
 }
 
 .size-rating-container .height-fix {
@@ -113,5 +115,4 @@
     width: 100%;
     text-align: center;
     margin-top: -0.7em;
-    color: #b8b8b8;
 }
