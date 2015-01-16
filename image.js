@@ -49,7 +49,7 @@ Image.prototype.printSizeComment = function(ppi, enlargementTolerancePercent) {
     var printHeight = ( this.printHeight( ppi) ).toFixed(1);
 	return "This image can be printed at up to " +
 						printWidth + "\" by " + printHeight + "\" without losing any resolution, " +
-						"or at up to about " + (printWidth * enlargementTolerancePercent) + "\" by " + (printHeight * enlargementTolerancePercent) +
+						"or at up to about " + (printWidth * enlargementTolerancePercent).toFixed(1) + "\" by " + (printHeight * enlargementTolerancePercent).toFixed(1) +
 						"\" with some minor loss of quality.\n";
 };
 

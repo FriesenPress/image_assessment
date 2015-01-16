@@ -5,7 +5,7 @@ var DEFAULT_ASPECT_RATIO_WARNING_THRESHOLD = 1.5;
 var DEFAULT_ENLARGEMENT_TOLERANCE_PERCENT = 1.25;
 var DEFAULT_INTERIOR_IMAGE_TOLERANCE_PERCENT = .75;
 
-var DEFAULT_IMAGE_URL = 'http://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Shakespeare.jpg/800px-Shakespeare.jpg';
+var DEFAULT_IMAGE_URL = 'http://upload.wikimedia.org/wikipedia/commons/a/a2/Shakespeare.jpg';
 var PLACEHOLDER_IMAGE = "ph.png";
 
 var DEFAULT_PREVIEW_HEIGHT = 200;
@@ -25,7 +25,7 @@ var DEFAULT_TRIM_SIZES = [
 function initializeForm() {
     $('[data-toggle="tooltip"]').tooltip();
 
-	//$( "#image-source-form" ).hide();
+	$( "#image-source-form" ).hide();
 	$( ".ppi" ).text(DEFAULT_PPI);
 
     $( "#invalid-source-flash").hide();
